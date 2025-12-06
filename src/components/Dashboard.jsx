@@ -1,21 +1,18 @@
-import React from 'react';
-import Sidebar from './Sidebar';
-import Navbar from './Navbar';
+import { Outlet } from "react-router-dom";
+import Sidebar from "../components/Sidebar";
+import Navbar from "../components/Navbar";
 
-const Dashboard = ({ onLogout }) => {
+export default function Dashboard({ onLogout }) {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen bg-gray-50">
       <Sidebar onLogout={onLogout} />
-      <div className="flex-1 flex flex-col">
+
+      <div className="flex-1 flex flex-col overflow-y-auto">
         <Navbar />
-        <main className="flex-1 p-4 bg-gray-100">
-          {/* Page content goes here */}
-          <h2>Welcome to the Dashboard</h2>
-          <p>This is the main content area.</p>
+        <main className="p-8">
+          <Outlet /> 
         </main>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

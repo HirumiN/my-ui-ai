@@ -1,16 +1,19 @@
-import React from 'react';
+import { Bell, Search } from "lucide-react";
 
 const Navbar = () => {
   return (
-    <nav className="bg-white shadow-md p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-xl font-bold">My App</h1>
-        <div className="space-x-4">
-          <a href="#notifications" className="text-gray-600 hover:text-gray-900">Notifications</a>
-          <a href="#user" className="text-gray-600 hover:text-gray-900">User</a>
-        </div>
+    <header className="w-full bg-white border-b p-4 flex items-center justify-end">
+      
+
+      {/* Right items */}
+      <div className="flex items-center gap-4">
+        <button className="relative hover:bg-gray-100 p-2 rounded-full">
+          <Bell size={20} />
+        </button>
+
+        <div className="w-9 h-9 bg-gray-300 rounded-full" />
       </div>
-    </nav>
+    </header>
   );
 };
 
