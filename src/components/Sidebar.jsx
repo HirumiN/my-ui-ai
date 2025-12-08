@@ -41,6 +41,27 @@ export default function Sidebar({ onLogout }) {
         <User size={18} /> Profil
       </NavLink>
 
+      <NavLink
+        to="/users"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
+            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          }`
+        }
+      >
+        <User size={18} /> Users
+      </NavLink>
+      <NavLink
+        to="/ukm"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
+            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          }`
+        }
+      >
+        <MessageSquare size={18} /> UKM
+      </NavLink>
+
       <button
         onClick={onLogout}
         className="flex items-center gap-3 p-2 text-red-500 mt-4 hover:bg-red-50 rounded-lg"
