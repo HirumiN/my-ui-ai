@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, MessageSquare, User, LogOut } from "lucide-react";
+import { Home, MessageSquare, User, LogOut, CheckSquare, BookOpen, Calendar } from "lucide-react";
 
 export default function Sidebar({ onLogout }) {
   return (
@@ -11,8 +11,7 @@ export default function Sidebar({ onLogout }) {
         to="/"
         end
         className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
-            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >
@@ -20,10 +19,39 @@ export default function Sidebar({ onLogout }) {
       </NavLink>
 
       <NavLink
+        to="/todos"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          }`
+        }
+      >
+        <CheckSquare size={18} /> Tugas Akademik
+      </NavLink>
+
+      <NavLink
+        to="/jadwal"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          }`
+        }
+      >
+        <BookOpen size={18} /> Jadwal Kuliah
+      </NavLink>
+
+      <NavLink
+        to="/semesters"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          }`
+        }
+      >
+        <Calendar size={18} /> Semesters
+      </NavLink>
+
+      <NavLink
         to="/chat-ai"
         className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
-            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >
@@ -33,8 +61,7 @@ export default function Sidebar({ onLogout }) {
       <NavLink
         to="/profile"
         className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
-            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >
@@ -44,8 +71,7 @@ export default function Sidebar({ onLogout }) {
       <NavLink
         to="/users"
         className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
-            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >
@@ -54,8 +80,7 @@ export default function Sidebar({ onLogout }) {
       <NavLink
         to="/ukm"
         className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${
-            isActive ? "bg-gray-200" : "hover:bg-gray-100"
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >

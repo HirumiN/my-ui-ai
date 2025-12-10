@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./components/Login";
@@ -8,20 +8,46 @@ import Dashboard from "./components/Dashboard"
 import Home from "./pages/Home";
 import Users from "./pages/Users";
 import UKM from "./pages/UKM";
+import Todos from "./pages/Todos";
+import Jadwal from "./pages/Jadwal";
+import Semesters from "./pages/Semesters";
 import { UserProvider } from './contexts/UserContext';
+import authService from './services/authService';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const user = await authService.checkAuth();
+      if (user) {
+        setIsLoggedIn(true);
+        setCurrentUser(user);
+      }
+      setAuthLoading(false);
+    };
+    initAuth();
+  }, []);
 
   const handleLogin = () => setIsLoggedIn(true);
-  const handleLogout = () => setIsLoggedIn(false);
+  const handleLogout = async () => {
+    await authService.logout();
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+  };
+
+  if (authLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
       ) : (
-        <UserProvider>
+        <UserProvider initialUser={currentUser}>
           <BrowserRouter>
             <Routes>
               <Route
@@ -33,7 +59,11 @@ function App() {
                 <Route path="profile" element={<Profile />} />
                 <Route path="users" element={<Users />} />
                 <Route path="ukm" element={<UKM />} />
-              </Route>            </Routes>
+                <Route path="todos" element={<Todos />} />
+                <Route path="jadwal" element={<Jadwal />} />
+                <Route path="semesters" element={<Semesters />} />
+              </Route>
+            </Routes>
           </BrowserRouter>
         </UserProvider>
       )}

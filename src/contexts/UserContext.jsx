@@ -1,12 +1,27 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import authService from '../services/authService';
 
-const UserContext = createContext(null);
+export const UserContext = createContext(null);
 
-export const UserProvider = ({ children }) => {
-  const [impersonatedUser, setImpersonatedUser] = useState(null); // Stores the full user object
+export const UserProvider = ({ children, initialUser }) => {
+  const [impersonatedUser, setImpersonatedUser] = useState(initialUser || null);
+
+  useEffect(() => {
+    setImpersonatedUser(initialUser);
+  }, [initialUser]);
+
+  const checkAuth = async () => {
+    try {
+      const user = await authService.checkAuth();
+      setImpersonatedUser(user);
+      return user;
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <UserContext.Provider value={{ impersonatedUser, setImpersonatedUser }}>
+    <UserContext.Provider value={{ impersonatedUser, setImpersonatedUser, checkAuth }}>
       {children}
     </UserContext.Provider>
   );
