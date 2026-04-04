@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, MessageSquare, User, LogOut, CheckSquare, BookOpen, Calendar } from "lucide-react";
+import { Home, MessageSquare, User, LogOut, CheckSquare, GraduationCap, Briefcase, Map } from "lucide-react";
 
 export default function Sidebar({ onLogout }) {
   return (
@@ -25,27 +25,17 @@ export default function Sidebar({ onLogout }) {
           }`
         }
       >
-        <CheckSquare size={18} /> Tugas Akademik
+        <CheckSquare size={18} /> Todolist
       </NavLink>
 
       <NavLink
-        to="/jadwal"
+        to="/akademik"
         className={({ isActive }) =>
           `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
           }`
         }
       >
-        <BookOpen size={18} /> Jadwal Kuliah
-      </NavLink>
-
-      <NavLink
-        to="/semesters"
-        className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
-          }`
-        }
-      >
-        <Calendar size={18} /> Semesters
+        <GraduationCap size={18} /> Akademik
       </NavLink>
 
       <NavLink
@@ -69,6 +59,26 @@ export default function Sidebar({ onLogout }) {
       </NavLink>
 
       <NavLink
+        to="/career-analysis"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-blue-100 text-blue-700" : "hover:bg-blue-50"
+          }`
+        }
+      >
+        <Briefcase size={18} /> Analisis Karir AI
+      </NavLink>
+
+      <NavLink
+        to="/roadmap"
+        className={({ isActive }) =>
+          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-indigo-100 text-indigo-700" : "hover:bg-indigo-50"
+          }`
+        }
+      >
+        <Map size={18} /> Career Roadmap
+      </NavLink>
+
+      <NavLink
         to="/users"
         className={({ isActive }) =>
           `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
@@ -76,15 +86,6 @@ export default function Sidebar({ onLogout }) {
         }
       >
         <User size={18} /> Users
-      </NavLink>
-      <NavLink
-        to="/ukm"
-        className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-gray-200" : "hover:bg-gray-100"
-          }`
-        }
-      >
-        <MessageSquare size={18} /> UKM
       </NavLink>
 
       <button

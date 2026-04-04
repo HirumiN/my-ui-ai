@@ -137,13 +137,28 @@ export default function Jadwal() {
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-1"
-                        disabled={!impersonatedUser}
+                        className={`px-4 py-2 text-white rounded-lg flex items-center gap-1 ${(!impersonatedUser || semesters.length === 0 || !selectedSemesterId) ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                        disabled={!impersonatedUser || semesters.length === 0 || !selectedSemesterId}
+                        title={semesters.length === 0 ? "Create a semester first" : (!selectedSemesterId ? "Select a semester first" : "Add Schedule")}
                     >
                         <Plus size={18} /> Add Schedule
                     </button>
                 </div>
             </div>
+
+            {/* Semester Warning Message */}
+            {impersonatedUser && semesters.length === 0 && (
+                <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-6" role="alert">
+                    <p className="font-bold">No Semesters Found</p>
+                    <p>You need to create a Semester first before you can add any Class Schedules (Jadwal Matkul). Go to the Semesters page to get started.</p>
+                </div>
+            )}
+            
+            {impersonatedUser && semesters.length > 0 && !selectedSemesterId && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 mb-6" role="alert">
+                    <p>Please select a semester from the dropdown above to view or add class schedules.</p>
+                </div>
+            )}
 
             {/* Day Filter Pills */}
             <div className="flex gap-2 mb-6 overflow-x-auto pb-2">

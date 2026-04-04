@@ -28,6 +28,12 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (!newJadwal.id_semester) {
+            setAddJadwalError("A semester must be selected before adding a schedule.");
+            return;
+        }
+
         setAddingJadwal(true);
         setAddJadwalError(null);
         try {

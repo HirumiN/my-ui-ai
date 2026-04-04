@@ -7,10 +7,11 @@ import Profile from "./pages/Profile";
 import Dashboard from "./components/Dashboard"
 import Home from "./pages/Home";
 import Users from "./pages/Users";
-import UKM from "./pages/UKM";
 import Todos from "./pages/Todos";
-import Jadwal from "./pages/Jadwal";
-import Semesters from "./pages/Semesters";
+import Akademik from "./pages/Akademik";
+import CareerAnalysis from "./pages/CareerAnalysis";
+import Roadmap from "./pages/Roadmap";
+import Onboarding from "./pages/Onboarding";
 import { UserProvider } from './contexts/UserContext';
 import authService from './services/authService';
 
@@ -46,6 +47,15 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       {!isLoggedIn ? (
         <Login onLogin={handleLogin} />
+      ) : !currentUser?.umur ? (
+        <UserProvider initialUser={currentUser}>
+          <Onboarding 
+            onComplete={async () => {
+              const updatedUser = await authService.checkAuth();
+              setCurrentUser(updatedUser);
+            }} 
+          />
+        </UserProvider>
       ) : (
         <UserProvider initialUser={currentUser}>
           <BrowserRouter>
@@ -58,10 +68,10 @@ function App() {
                 <Route path="chat-ai" element={<ChatAI />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="users" element={<Users />} />
-                <Route path="ukm" element={<UKM />} />
                 <Route path="todos" element={<Todos />} />
-                <Route path="jadwal" element={<Jadwal />} />
-                <Route path="semesters" element={<Semesters />} />
+                <Route path="akademik" element={<Akademik />} />
+                <Route path="career-analysis" element={<CareerAnalysis />} />
+                <Route path="roadmap" element={<Roadmap />} />
               </Route>
             </Routes>
           </BrowserRouter>

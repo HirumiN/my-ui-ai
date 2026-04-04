@@ -47,7 +47,7 @@ export const AddTodoModal = ({ isOpen, onClose, onAddTodo, impersonatedUser }) =
     return (
         <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">Add New Tugas Akademik</h2>
+                <h2 className="text-xl font-semibold mb-4">Tambah Todo Baru</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label htmlFor="todoNama" className="block text-sm font-medium text-gray-700">Task Name</label>
@@ -62,16 +62,20 @@ export const AddTodoModal = ({ isOpen, onClose, onAddTodo, impersonatedUser }) =
                         />
                     </div>
                     <div>
-                        <label htmlFor="todoTipe" className="block text-sm font-medium text-gray-700">Type</label>
-                        <input
-                            type="text"
+                        <label htmlFor="todoTipe" className="block text-sm font-medium text-gray-700">Prioritas</label>
+                        <select
                             name="tipe"
                             id="todoTipe"
                             value={newTodo.tipe}
                             onChange={handleNewTodoChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             required
-                        />
+                        >
+                            <option value="">Pilih prioritas</option>
+                            <option value="Tinggi">🔴 Tinggi</option>
+                            <option value="Menengah">🟡 Menengah</option>
+                            <option value="Rendah">🟢 Rendah</option>
+                        </select>
                     </div>
                     <div>
                         <label htmlFor="todoTenggat" className="block text-sm font-medium text-gray-700">Due Date</label>
@@ -152,7 +156,7 @@ export const EditTodoModal = ({ isOpen, onClose, onUpdateTodo, todo }) => {
     return (
         <div className="fixed inset-0 bg-[rgba(0,0,0,0.5)] flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">Edit Tugas Akademik</h2>
+                <h2 className="text-xl font-semibold mb-4">Edit Todo</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     {/* Ensure ID is preserved in state */}
                     <input type="hidden" name="id_todo" value={editedTodo.id_todo || ''} />
@@ -169,16 +173,20 @@ export const EditTodoModal = ({ isOpen, onClose, onUpdateTodo, todo }) => {
                         />
                     </div>
                     <div>
-                        <label htmlFor="editTodoTipe" className="block text-sm font-medium text-gray-700">Type</label>
-                        <input
-                            type="text"
+                        <label htmlFor="editTodoTipe" className="block text-sm font-medium text-gray-700">Prioritas</label>
+                        <select
                             name="tipe"
                             id="editTodoTipe"
                             value={editedTodo.tipe || ''}
                             onChange={handleEditTodoChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             required
-                        />
+                        >
+                            <option value="">Pilih prioritas</option>
+                            <option value="Tinggi">🔴 Tinggi</option>
+                            <option value="Menengah">🟡 Menengah</option>
+                            <option value="Rendah">🟢 Rendah</option>
+                        </select>
                     </div>
                     <div>
                         <label htmlFor="editTodoTenggat" className="block text-sm font-medium text-gray-700">Due Date</label>

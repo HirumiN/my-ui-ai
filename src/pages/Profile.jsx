@@ -11,7 +11,14 @@ export default function Profile() {
     telepon: '',
     bio: '',
     lokasi: '',
-    calendar_name: ''
+    calendar_name: '',
+    umur: '',
+    minat: '',
+    keterampilan: '',
+    kepribadian: '',
+    target_karir: '',
+    gaya_belajar: '',
+    waktu_luang: ''
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -24,7 +31,14 @@ export default function Profile() {
         telepon: impersonatedUser.telepon || '',
         bio: impersonatedUser.bio || '',
         lokasi: impersonatedUser.lokasi || '',
-        calendar_name: impersonatedUser.calendar_name || 'My Campus'
+        calendar_name: impersonatedUser.calendar_name || 'My Campus',
+        umur: impersonatedUser.umur || '',
+        minat: impersonatedUser.minat || '',
+        keterampilan: impersonatedUser.keterampilan || '',
+        kepribadian: impersonatedUser.kepribadian || '',
+        target_karir: impersonatedUser.target_karir || '',
+        gaya_belajar: impersonatedUser.gaya_belajar || '',
+        waktu_luang: impersonatedUser.waktu_luang || ''
       });
     }
   }, [impersonatedUser]);
@@ -48,6 +62,13 @@ export default function Profile() {
       data.append('bio', formData.bio);
       data.append('lokasi', formData.lokasi);
       data.append('calendar_name', formData.calendar_name);
+      data.append('umur', formData.umur);
+      data.append('minat', formData.minat);
+      data.append('keterampilan', formData.keterampilan);
+      data.append('kepribadian', formData.kepribadian);
+      data.append('target_karir', formData.target_karir);
+      data.append('gaya_belajar', formData.gaya_belajar);
+      data.append('waktu_luang', formData.waktu_luang);
 
       // Using dataService to post to /update-user/{id}
       // Note: checkAuth() in context might need to reload user to reflect changes locally if API returns redirect. 
@@ -142,6 +163,90 @@ export default function Profile() {
               rows="3"
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             ></textarea>
+          </div>
+
+          <div className="pt-4 border-t">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">AI Personalization Profile</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                <input
+                  type="number"
+                  name="umur"
+                  value={formData.umur}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Target Career</label>
+                <input
+                  type="text"
+                  name="target_karir"
+                  value={formData.target_karir}
+                  onChange={handleChange}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div>
+            </div>
+            
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Interests</label>
+              <textarea
+                name="minat"
+                value={formData.minat}
+                onChange={handleChange}
+                rows="2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+              ></textarea>
+            </div>
+            
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Skills</label>
+              <textarea
+                name="keterampilan"
+                value={formData.keterampilan}
+                onChange={handleChange}
+                rows="2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+              ></textarea>
+            </div>
+            
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Personality</label>
+              <textarea
+                name="kepribadian"
+                value={formData.kepribadian}
+                onChange={handleChange}
+                rows="2"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+              ></textarea>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Learning Style</label>
+                <textarea
+                  name="gaya_belajar"
+                  value={formData.gaya_belajar}
+                  onChange={handleChange}
+                  placeholder="e.g. Visual, Audio, Kinesthetic"
+                  rows="2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Availability / Time</label>
+                <textarea
+                  name="waktu_luang"
+                  value={formData.waktu_luang}
+                  onChange={handleChange}
+                  placeholder="e.g. 1 hour a day, Weekends only"
+                  rows="2"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                ></textarea>
+              </div>
+            </div>
           </div>
 
           <div className="pt-4 border-t">
