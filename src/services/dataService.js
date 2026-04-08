@@ -29,6 +29,12 @@ const updateUser = (id, formData) => client.post(`/update-user/${id}`, formData,
 
 const manualSync = () => client.post('/api/manual-sync');
 
+// RUTINITAS
+const getRutinitas = () => client.get('/api/rutinitas');
+const createRutinitas = (data) => client.post('/api/rutinitas', data);
+const updateRutinitas = (id, data) => client.put(`/api/rutinitas/${id}`, data);
+const deleteRutinitas = (id) => client.delete(`/api/rutinitas/${id}`);
+
 export default {
     getTodos,
     createTodo,
@@ -44,5 +50,9 @@ export default {
     deleteSemester,
     getUsers,
     updateUser,
-    manualSync
+    manualSync,
+    getRutinitas,
+    createRutinitas,
+    updateRutinitas,
+    deleteRutinitas
 };
