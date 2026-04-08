@@ -34,10 +34,10 @@ const STEPS_CONFIG = [
   {
     field: 'semester_sekarang',
     title: 'Semester berapa Anda saat ini?',
-    subtitle: 'Penyesuaian rekomendasi tugas dan aktivitas.',
-    options: ['Semester 1-2 (Maba)', 'Semester 3-4', 'Semester 5-6', 'Semester 7-8 (Tingkat Akhir)'],
-    placeholder: 'Atau sebutkan spesifik...',
-    type: 'text',
+    subtitle: 'Penyesuaian rekomendasi tugas dan aktivitas berdasarkan kurikulum.',
+    options: ['1', '2', '3', '4', '5', '6', '7', '8'],
+    placeholder: 'Sebutkan spesifik, contoh: 9',
+    type: 'number',
     multiSelect: false
   },
   {

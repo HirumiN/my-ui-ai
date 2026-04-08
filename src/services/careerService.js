@@ -21,6 +21,11 @@ const careerService = {
     return response.data;
   },
 
+  deleteRoadmap: async (roadmapId) => {
+    const response = await client.delete(`/api/roadmaps/${roadmapId}`);
+    return response.data;
+  },
+
   getCareerProgress: async () => {
     const response = await client.get(`/api/career-progress`);
     return response.data;

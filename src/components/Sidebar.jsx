@@ -65,17 +65,7 @@ export default function Sidebar({ onLogout }) {
           }`
         }
       >
-        <Briefcase size={18} /> Analisis Karir AI
-      </NavLink>
-
-      <NavLink
-        to="/roadmap"
-        className={({ isActive }) =>
-          `flex items-center gap-3 p-2 rounded-lg font-medium cursor-pointer ${isActive ? "bg-indigo-100 text-indigo-700" : "hover:bg-indigo-50"
-          }`
-        }
-      >
-        <Map size={18} /> Career Roadmap
+        <Briefcase size={18} /> Karir & Roadmap
       </NavLink>
 
       <NavLink

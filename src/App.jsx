@@ -10,7 +10,6 @@ import Users from "./pages/Users";
 import Todos from "./pages/Todos";
 import Akademik from "./pages/Akademik";
 import CareerAnalysis from "./pages/CareerAnalysis";
-import Roadmap from "./pages/Roadmap";
 import Onboarding from "./pages/Onboarding";
 import { UserProvider } from './contexts/UserContext';
 import authService from './services/authService';
@@ -71,7 +70,6 @@ function App() {
                 <Route path="todos" element={<Todos />} />
                 <Route path="akademik" element={<Akademik />} />
                 <Route path="career-analysis" element={<CareerAnalysis />} />
-                <Route path="roadmap" element={<Roadmap />} />
               </Route>
             </Routes>
           </BrowserRouter>

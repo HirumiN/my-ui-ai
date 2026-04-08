@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map } from 'lucide-react';
+import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Roadmap from './Roadmap';
 
 export default function CareerAnalysis() {
   const { impersonatedUser: user } = useUser();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('analysis');
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState(null);
   const [saveLoading, setSaveLoading] = useState(false);
@@ -46,6 +48,7 @@ export default function CareerAnalysis() {
       };
       await careerService.saveAnalysis(user.id_user, finalData);
       setSaved(true);
+      setTimeout(() => setActiveTab('roadmap'), 500); // Switch tab automatically
     } catch (error) {
       console.error(error);
       alert('Gagal menyimpan hasil karir');
@@ -66,8 +69,31 @@ export default function CareerAnalysis() {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 w-full max-w-[98%] mx-auto">
-      <h2 className="text-2xl font-bold mb-2">Analisis & Roadmap Karir AI</h2>
+    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 w-full max-w-[98%] mx-auto mt-2 h-full flex flex-col">
+      <div className="flex gap-4 border-b mb-6">
+          <button 
+              className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'analysis' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+              onClick={() => setActiveTab('analysis')}
+          >
+              <div className="flex items-center gap-2"><Briefcase size={16} /> Analisis Karir AI</div>
+          </button>
+          <button 
+              className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'roadmap' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+              onClick={() => setActiveTab('roadmap')}
+          >
+              <div className="flex items-center gap-2"><Map size={16} /> Peta Karir Aktif</div>
+          </button>
+      </div>
+
+      {activeTab === 'roadmap' && (
+          <div className="flex-1 w-full relative">
+              <Roadmap />
+          </div>
+      )}
+
+      {activeTab === 'analysis' && (
+      <div>
+      <h2 className="text-2xl font-bold mb-2">Generasi Karir & Rekomendasi Belajar</h2>
       <p className="text-gray-500 mb-8">Dapatkan panduan karir dan rencana belajar otomatis berdasarkan profil rekam akademik dan aktivitas Anda!</p>
 
       {error && (
@@ -203,7 +229,7 @@ export default function CareerAnalysis() {
            
            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button 
-                onClick={() => navigate('/roadmap')}
+                onClick={() => setActiveTab('roadmap')}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition flex items-center justify-center gap-3 text-lg"
               >
                 <Map size={24} /> Lihat Detail Roadmap
@@ -216,6 +242,8 @@ export default function CareerAnalysis() {
               </button>
            </div>
         </div>
+      )}
+      </div>
       )}
     </div>
   );

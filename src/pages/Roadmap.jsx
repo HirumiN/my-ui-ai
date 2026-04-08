@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import { Map, CheckCircle, Clock, MapPin, Target, ChevronRight } from 'lucide-react';
+import { Map, CheckCircle, Clock, MapPin, Target, ChevronRight, Trash2, X } from 'lucide-react';
 
 export default function Roadmap() {
   const { impersonatedUser: user } = useUser();
@@ -11,6 +11,7 @@ export default function Roadmap() {
   const [progressData, setProgressData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stepsLoading, setStepsLoading] = useState(false);
+  const [activePopupPhase, setActivePopupPhase] = useState(null);
 
   const fetchRoadmaps = useCallback(async () => {
     if (!user) return;
@@ -62,6 +63,25 @@ export default function Roadmap() {
     }
   };
 
+  const handleDeleteRoadmap = async (roadmapId) => {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus peta karir ini secara permanen?")) return;
+    try {
+      setLoading(true);
+      await careerService.deleteRoadmap(roadmapId);
+      const updatedRoadmaps = roadmaps.filter(r => r.id !== roadmapId);
+      setRoadmaps(updatedRoadmaps);
+      if (activeRoadmapId === roadmapId) {
+        setActiveRoadmapId(updatedRoadmaps.length > 0 ? updatedRoadmaps[updatedRoadmaps.length - 1].id : null);
+        setSteps([]);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Gagal menghapus roadmap.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="p-6 max-w-5xl mx-auto">
@@ -81,12 +101,14 @@ export default function Roadmap() {
   }, {});
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-          <Map className="text-indigo-600" size={32} /> Career Roadmap
-        </h1>
-        <p className="text-gray-500 mt-2">Jalur pembelajaran yang dipersonalisasi AI untuk mencapai karir impian Anda.</p>
+    <div className="w-full h-full pb-10">
+      <div className="mb-6 flex justify-between items-center border-b pb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+            Alur Pembelajaran
+          </h2>
+          <p className="text-gray-500 mt-1">Jalur Node-Graph bertahap untuk mencapai karir impian Anda.</p>
+        </div>
       </div>
 
       {loading ? (
@@ -104,81 +126,125 @@ export default function Roadmap() {
             <h3 className="font-bold text-gray-700 mb-4 px-2 uppercase tracking-wider text-xs">Peta Karir Anda</h3>
             <div className="space-y-2">
               {roadmaps.map(rm => (
-                <button
-                  key={rm.id}
-                  onClick={() => setActiveRoadmapId(rm.id)}
-                  className={`w-full text-left p-3 rounded-lg flex items-center gap-3 transition-all ${
-                    activeRoadmapId === rm.id ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'hover:bg-gray-50 border border-transparent'
-                  }`}
-                >
-                  <MapPin size={18} className={activeRoadmapId === rm.id ? 'text-indigo-600' : 'text-gray-400'} />
-                  <span className={`font-medium text-sm line-clamp-2 ${activeRoadmapId === rm.id ? 'text-indigo-900' : 'text-gray-700'}`}>
-                    {rm.title}
-                  </span>
-                </button>
+                <div key={rm.id} className={`w-full text-left p-3 rounded-lg flex items-center justify-between transition-all group ${activeRoadmapId === rm.id ? 'bg-indigo-50 border border-indigo-200 shadow-sm' : 'hover:bg-gray-50 border border-transparent'
+                  }`}>
+                  <button
+                    onClick={() => setActiveRoadmapId(rm.id)}
+                    className="flex items-center gap-3 w-full"
+                  >
+                    <MapPin size={18} className={activeRoadmapId === rm.id ? 'text-indigo-600' : 'text-gray-400'} />
+                    <span className={`font-medium text-sm line-clamp-2 text-left ${activeRoadmapId === rm.id ? 'text-indigo-900' : 'text-gray-700'}`}>
+                      {rm.title}
+                    </span>
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDeleteRoadmap(rm.id); }}
+                    className="p-1.5 text-gray-400 opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 rounded-md transition-all shrink-0 cursor-pointer z-10 relative"
+                    title="Hapus Roadmap"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               ))}
             </div>
           </div>
 
           {/* Main Content - Selected Roadmap */}
           <div className="lg:col-span-3">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 shadow-sm">
-              
+            <div className="bg-gradient-to-br from-gray-50 to-indigo-50 border border-indigo-100 rounded-2xl p-10 shadow-sm min-h-[600px] flex justify-center">
+
               {stepsLoading ? (
-                 <div className="flex justify-center p-12"><Clock className="animate-spin text-indigo-400" size={32} /></div>
+                <div className="flex justify-center p-12 w-full"><Clock className="animate-spin text-indigo-400" size={32} /></div>
               ) : (
-                <div className="space-y-10">
-                  {Object.entries(stepsByPhase).map(([phase, phaseSteps], index) => (
-                    <div key={phase} className="relative">
-                      {/* Timeline connecting line */}
-                      {index !== Object.entries(stepsByPhase).length - 1 && (
-                        <div className="absolute left-[1.15rem] top-10 bottom-[-2.5rem] w-0.5 bg-indigo-200"></div>
-                      )}
-                      
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="bg-indigo-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-md z-10 shrink-0">
-                          {index + 1}
-                        </div>
-                        <h4 className="text-xl font-bold text-indigo-900">{phase}</h4>
-                      </div>
+                <div className="flex flex-col items-center w-full relative pt-4">
+                  {Object.entries(stepsByPhase).map(([phase, phaseSteps], index) => {
+                    const isCompleted = phaseSteps.every(step => {
+                      const p = progressData.find(pr => pr.id_roadmap_step === step.id);
+                      return p?.status === 'completed';
+                    });
 
-                      <div className="pl-14 space-y-4">
-                        {phaseSteps.map(step => {
-                          const progress = progressData.find(p => p.id_roadmap_step === step.id);
-                          const isCompleted = progress?.status === 'completed';
+                    return (
+                      <div key={phase} className="relative flex justify-center w-full mb-12">
+                        {/* Vertical line connecting nodes (placed centrally) */}
+                        {index !== Object.entries(stepsByPhase).length - 1 && (
+                          <div className="absolute top-[4.5rem] h-12 w-1.5 bg-indigo-200 z-0"></div>
+                        )}
 
-                          return (
-                            <div key={step.id} className={`bg-white border rounded-xl p-5 shadow-sm transition-all flex gap-4 ${isCompleted ? 'border-green-200 bg-green-50/30' : 'border-gray-200 hover:border-indigo-300'}`}>
-                               <button 
-                                 onClick={() => progress && toggleProgress(progress.id, progress.status)}
-                                 className="mt-1 shrink-0 transition-colors focus:outline-none"
-                               >
-                                 {isCompleted ? (
-                                    <CheckCircle className="text-green-500" size={24} />
-                                 ) : (
-                                    <div className="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-indigo-400"></div>
-                                 )}
-                               </button>
-                               <div className="flex-1">
-                                  <h5 className={`font-bold text-lg mb-1 ${isCompleted ? 'text-gray-500 line-through decoration-gray-400' : 'text-gray-800'}`}>
-                                    {step.title}
-                                  </h5>
-                                  <p className={`text-sm ${isCompleted ? 'text-gray-400' : 'text-gray-600'}`}>
-                                    {step.description}
-                                  </p>
-                               </div>
-                            </div>
-                          );
-                        })}
+                        <button
+                          onClick={() => setActivePopupPhase(phase)}
+                          className={`w-72 sm:w-80 py-5 px-6 rounded-2xl font-bold shadow-lg text-center transition-all hover:scale-105 border-4 z-10 ${isCompleted ? 'bg-green-50 border-green-400 text-green-800' : 'bg-white border-indigo-500 text-indigo-900 hover:bg-indigo-50'
+                            }`}
+                        >
+                          <div className="text-[10px] uppercase font-black tracking-widest mb-1 opacity-60">Fase {index + 1}</div>
+                          {phase}
+                        </button>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
           </div>
         </div>
       )}
+
+      {/* Off-canvas Drawer overlay */}
+      {activePopupPhase && (
+        <div className="fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm" onClick={() => setActivePopupPhase(null)}></div>
+      )}
+
+      {/* Drawer panel */}
+      <div className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col ${activePopupPhase ? 'translate-x-0' : 'translate-x-full'}`}>
+        {activePopupPhase && (
+          <>
+            <div className="p-6 border-b bg-indigo-50 flex justify-between items-center shadow-sm z-10">
+              <div>
+                <div className="text-[10px] uppercase font-bold text-indigo-500 tracking-wider mb-1">Rincian Modul Fase</div>
+                <h3 className="font-bold text-xl text-indigo-900 pr-4 leading-tight">{activePopupPhase}</h3>
+              </div>
+              <button onClick={() => setActivePopupPhase(null)} className="p-2 bg-white rounded-full text-indigo-300 hover:text-red-500 shadow-sm transition-colors cursor-pointer border border-indigo-100">
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 bg-gray-50">
+              <p className="text-sm font-medium text-gray-500 mb-5 bg-white p-3 rounded-lg border border-gray-200 border-l-4 border-l-indigo-400 shadow-sm">
+                Selesaikan seluruh rincian modul / tahapan praktik berikut untuk mengamankan <i>progress</i> fase ini.
+              </p>
+              <div className="space-y-4">
+                {stepsByPhase[activePopupPhase].map(step => {
+                  const progress = progressData.find(p => p.id_roadmap_step === step.id);
+                  const isDone = progress?.status === 'completed';
+
+                  return (
+                    <div key={step.id} className={`bg-white border rounded-xl p-5 shadow-sm transition-all flex gap-4 ${isDone ? 'border-green-200 bg-green-50/50 opacity-80' : 'border-gray-200 hover:border-indigo-300 hover:shadow-md'}`}>
+                      <button
+                        onClick={() => progress && toggleProgress(progress.id, progress.status)}
+                        className="mt-1 shrink-0 transition-colors focus:outline-none"
+                      >
+                        {isDone ? (
+                          <CheckCircle className="text-green-500 drop-shadow-sm" size={24} />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full border-2 border-gray-300 hover:border-indigo-400 cursor-pointer bg-white"></div>
+                        )}
+                      </button>
+                      <div className="flex-1">
+                        <h5 className={`font-bold text-[17px] mb-2 leading-snug ${isDone ? 'text-gray-500 line-through decoration-gray-400' : 'text-gray-800'}`}>
+                          {step.title}
+                        </h5>
+                        <p className={`text-sm leading-relaxed ${isDone ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
     </div>
   );
 }
