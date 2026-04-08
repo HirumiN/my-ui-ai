@@ -14,6 +14,33 @@ const STEPS_CONFIG = [
     multiSelect: false
   },
   {
+    field: 'universitas',
+    title: 'Di mana Kampus / Tempat Studi Anda?',
+    subtitle: 'Nama institusi pendidikan saat ini.',
+    options: ['Universitas Indonesia', 'Institut Teknologi Bandung', 'Universitas Gadjah Mada', 'Universitas Brawijaya', 'Institut Teknologi Sepuluh Nopember'],
+    placeholder: 'Ketik nama Universitas...',
+    type: 'text',
+    multiSelect: false
+  },
+  {
+    field: 'jurusan',
+    title: 'Apa Jurusan / Program Studi Anda?',
+    subtitle: 'Membantu menyusun roadmap teknis linear dengan kurikulum.',
+    options: ['Teknik Informatika', 'Sistem Informasi', 'Ilmu Komputer', 'Data Science', 'Sistem Komputer'],
+    placeholder: 'Sebutkan jurusan Anda...',
+    type: 'text',
+    multiSelect: false
+  },
+  {
+    field: 'semester_sekarang',
+    title: 'Semester berapa Anda saat ini?',
+    subtitle: 'Penyesuaian rekomendasi tugas dan aktivitas.',
+    options: ['Semester 1-2 (Maba)', 'Semester 3-4', 'Semester 5-6', 'Semester 7-8 (Tingkat Akhir)'],
+    placeholder: 'Atau sebutkan spesifik...',
+    type: 'text',
+    multiSelect: false
+  },
+  {
     field: 'target_karir',
     title: 'Apa target karir Anda?',
     subtitle: 'Rekomendasi kegiatan dan belajar akan disesuaikan untuk ini.',
@@ -39,6 +66,14 @@ const STEPS_CONFIG = [
     placeholder: 'Sebutkan skill lainnya...',
     type: 'text',
     multiSelect: true
+  },
+  {
+    field: 'tingkat_keterampilan',
+    title: 'Level Mahir (Skill Level)',
+    subtitle: 'Beri tingkatan pada skill yang baru saja Anda pilih.',
+    options: ['Pemula', 'Menengah', 'Lanjutan'],
+    type: 'custom_skill_level',
+    multiSelect: false
   },
   {
     field: 'kepribadian',
@@ -74,8 +109,12 @@ export default function Onboarding({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState({
     umur: '',
+    universitas: '',
+    jurusan: '',
+    semester_sekarang: '',
     minat: '',
     keterampilan: '',
+    keterampilan_levels: {},
     kepribadian: '',
     target_karir: '',
     gaya_belajar: '',
@@ -83,6 +122,7 @@ export default function Onboarding({ onComplete }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [customInput, setCustomInput] = useState('');
 
   const activeStepConfig = STEPS_CONFIG[currentStep];
 
@@ -94,7 +134,7 @@ export default function Onboarding({ onComplete }) {
   const handleOptionClick = (field, option, isMulti) => {
     setFormData(prev => {
       let currentVal = prev[field] || '';
-      
+
       if (isMulti) {
         // Toggle selection logic for comma separated string
         let parts = currentVal ? currentVal.split(', ').filter(Boolean) : [];
@@ -112,12 +152,14 @@ export default function Onboarding({ onComplete }) {
   };
 
   const handleNext = () => {
+    setCustomInput(''); // Reset custom input between steps
     if (currentStep < STEPS_CONFIG.length - 1) {
       setCurrentStep(prev => prev + 1);
     }
   };
 
   const handlePrev = () => {
+    setCustomInput(''); // Reset custom input
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -136,10 +178,25 @@ export default function Onboarding({ onComplete }) {
       data.append('telepon', impersonatedUser?.telepon || '');
       data.append('bio', impersonatedUser?.bio || '');
       data.append('lokasi', impersonatedUser?.lokasi || '');
-      
+
       data.append('umur', formData.umur);
+      data.append('universitas', formData.universitas);
+      data.append('jurusan', formData.jurusan);
+      data.append('semester_sekarang', formData.semester_sekarang);
       data.append('minat', formData.minat);
-      data.append('keterampilan', formData.keterampilan);
+
+      // Format keterampilan with levels mapping
+      let finalKeterampilan = formData.keterampilan;
+      if (finalKeterampilan) {
+        const skillsArray = finalKeterampilan.split(', ').filter(Boolean);
+        const mappedSkills = skillsArray.map(skill => {
+          const level = formData.keterampilan_levels[skill];
+          return level ? `${skill} (${level})` : skill;
+        });
+        finalKeterampilan = mappedSkills.join(', ');
+      }
+      data.append('keterampilan', finalKeterampilan);
+
       data.append('kepribadian', formData.kepribadian);
       data.append('target_karir', formData.target_karir);
       data.append('gaya_belajar', formData.gaya_belajar);
@@ -148,7 +205,7 @@ export default function Onboarding({ onComplete }) {
       if (impersonatedUser && impersonatedUser.id_user) {
         await dataService.updateUser(impersonatedUser.id_user, data);
       }
-      
+
       onComplete();
 
     } catch (err) {
@@ -160,83 +217,165 @@ export default function Onboarding({ onComplete }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
-      <div className="bg-white max-w-2xl w-full shadow-2xl rounded-2xl p-8 md:p-12">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 sm:p-8">
+      <div className="bg-white max-w-6xl w-full shadow-2xl rounded-3xl p-10 md:p-16">
         {/* Header and Progress indicator */}
-        <div className="mb-8 text-center transition-all">
+        <div className="mb-12 text-center transition-all">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">Halo, {impersonatedUser?.nama || 'User'}!</h1>
           <p className="text-gray-500 mb-6">Ceritakan tentang Anda agar AI kami bisa bertindak personal.</p>
-          
+
           <div className="flex items-center justify-center space-x-2">
             {STEPS_CONFIG.map((_, idx) => (
-              <div 
-                key={idx} 
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  currentStep === idx ? 'w-8 bg-blue-600' : 
+              <div
+                key={idx}
+                className={`h-2 rounded-full transition-all duration-300 ${currentStep === idx ? 'w-8 bg-blue-600' :
                   currentStep > idx ? 'w-4 bg-blue-300' : 'w-4 bg-gray-200'
-                }`}
+                  }`}
               ></div>
             ))}
           </div>
         </div>
 
         {/* Wizard Form Area */}
-        <div className="min-h-[250px] flex flex-col justify-center transition-opacity duration-300">
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-1">
+        <div className="min-h-[450px] flex flex-col justify-center transition-opacity duration-300">
+          <div className="mb-8">
+            <h2 className="text-4xl font-semibold text-gray-800 mb-3">
               Q{currentStep + 1}: {activeStepConfig.title}
             </h2>
-            <p className="text-gray-500 text-sm">{activeStepConfig.subtitle}</p>
+            <p className="text-gray-500 md:text-lg">{activeStepConfig.subtitle}</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Options grid */}
-            <div className="flex flex-wrap gap-2">
-              {activeStepConfig.options.map((option, idx) => {
-                const isSelected = activeStepConfig.multiSelect 
-                  ? (formData[activeStepConfig.field] || '').split(', ').includes(option)
-                  : formData[activeStepConfig.field] === option;
-                
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect)}
-                    className={`px-4 py-2 border rounded-full text-sm font-medium transition-all duration-200 ${
-                      isSelected 
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-300 ring-offset-1 transform scale-105' 
+            {activeStepConfig.type === 'custom_skill_level' ? (
+              <div className="space-y-4 mt-2">
+                {(!formData.keterampilan || formData.keterampilan.trim() === '') ? (
+                  <p className="text-gray-500 italic p-4 bg-gray-50 rounded-lg text-center border">Anda belum memasukkan skill di tahapan sebelumnya.</p>
+                ) : (
+                  formData.keterampilan.split(', ').filter(Boolean).map((skill, sIdx) => (
+                    <div key={sIdx} className="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-blue-500">
+                      <h3 className="font-semibold text-gray-800 mb-3">{skill}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {activeStepConfig.options.map((lvl, lIdx) => {
+                          const isSel = formData.keterampilan_levels[skill] === lvl;
+                          return (
+                            <button
+                              key={lIdx}
+                              type="button"
+                              onClick={() => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  keterampilan_levels: {
+                                    ...prev.keterampilan_levels,
+                                    [skill]: lvl
+                                  }
+                                }))
+                              }}
+                              className={`px-4 py-1.5 border rounded-full text-sm font-medium transition-all ${isSel ? 'bg-blue-600 text-white border-blue-600 shadow ring-2 ring-blue-300' : 'bg-gray-50 text-gray-600 hover:bg-blue-50 border-gray-300'}`}
+                            >
+                              {lvl}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {/* 1. Predefined options */}
+                {activeStepConfig.options.map((option, idx) => {
+                  const isSelected = activeStepConfig.multiSelect
+                    ? (formData[activeStepConfig.field] || '').split(', ').includes(option)
+                    : formData[activeStepConfig.field] === option;
+
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect)}
+                      className={`px-5 py-3 border rounded-full md:text-base font-medium transition-all duration-200 ${isSelected
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg ring-4 ring-blue-200 ring-offset-2 transform scale-105'
                         : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                );
-              })}
-            </div>
+                        }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+                {/* 2. Custom selected options not in the predefined list */}
+                {activeStepConfig.multiSelect && (formData[activeStepConfig.field] || '').split(', ').filter(Boolean).map((customOpt, cIdx) => {
+                  if (activeStepConfig.options.includes(customOpt)) return null;
+                  return (
+                    <button
+                      key={`custom-${cIdx}`}
+                      type="button"
+                      onClick={() => handleOptionClick(activeStepConfig.field, customOpt, true)}
+                      className="px-5 py-3 border rounded-full md:text-base font-medium transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-lg ring-4 ring-blue-200 ring-offset-2 transform scale-105"
+                    >
+                      {customOpt} <span className="ml-1 text-xs opacity-80 hover:opacity-100">✕</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Manual input fallback */}
-            <div className="pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Atau Isi Sendiri:</label>
-              {(activeStepConfig.type === 'number' || !activeStepConfig.multiSelect) ? (
-                <input
-                  type={activeStepConfig.type}
-                  name={activeStepConfig.field}
-                  value={formData[activeStepConfig.field]}
-                  onChange={handleChange}
-                  placeholder={activeStepConfig.placeholder}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
-                />
-              ) : (
-                <textarea
-                  name={activeStepConfig.field}
-                  value={formData[activeStepConfig.field]}
-                  onChange={handleChange}
-                  placeholder={activeStepConfig.placeholder}
-                  rows="2"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
-                ></textarea>
-              )}
-            </div>
+            {activeStepConfig.type !== 'custom_skill_level' && (
+              <div className="pt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Atau Isi Sendiri:</label>
+                {(activeStepConfig.type === 'number' || !activeStepConfig.multiSelect) ? (
+                  <input
+                    type={activeStepConfig.type}
+                    name={activeStepConfig.field}
+                    value={formData[activeStepConfig.field]}
+                    onChange={handleChange}
+                    placeholder={activeStepConfig.placeholder}
+                    className="w-full border border-gray-300 rounded-xl px-5 py-4 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800 md:text-lg shadow-inner"
+                  />
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customInput}
+                      onChange={(e) => setCustomInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ',') {
+                          e.preventDefault();
+                          if (customInput.trim()) {
+                            const currentStr = formData[activeStepConfig.field] || '';
+                            const parts = currentStr ? currentStr.split(', ').filter(Boolean) : [];
+                            if (!parts.includes(customInput.trim())) {
+                              setFormData({ ...formData, [activeStepConfig.field]: [...parts, customInput.trim()].join(', ') });
+                            }
+                            setCustomInput('');
+                          }
+                        }
+                      }}
+                      placeholder="Ketik lalu Tambah..."
+                      className="flex-1 w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customInput.trim()) {
+                          const currentStr = formData[activeStepConfig.field] || '';
+                          const parts = currentStr ? currentStr.split(', ').filter(Boolean) : [];
+                          if (!parts.includes(customInput.trim())) {
+                            setFormData({ ...formData, [activeStepConfig.field]: [...parts, customInput.trim()].join(', ') });
+                          }
+                          setCustomInput('');
+                        }
+                      }}
+                      className="px-5 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 border transition-all"
+                    >
+                      Tambah
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -252,13 +391,12 @@ export default function Onboarding({ onComplete }) {
             type="button"
             onClick={handlePrev}
             disabled={currentStep === 0 || loading}
-            className={`px-6 py-2.5 font-medium rounded-lg flex items-center gap-2 transition-all ${
-              currentStep === 0 ? 'text-gray-400 cursor-not-allowed opacity-50' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-            }`}
+            className={`px-6 py-2.5 font-medium rounded-lg flex items-center gap-2 transition-all ${currentStep === 0 ? 'text-gray-400 cursor-not-allowed opacity-50' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+              }`}
           >
             <ChevronLeft size={20} /> Sebelumnya
           </button>
-          
+
           {currentStep < STEPS_CONFIG.length - 1 ? (
             <button
               type="button"
