@@ -59,7 +59,7 @@ function SemesterSection({ impersonatedUser }) {
             <div className="flex justify-between items-center mb-4">
                 <p className="text-gray-500 text-sm">Kelola semester akademik (sinkron dengan Google Kalender)</p>
                 <button onClick={() => setIsAddOpen(true)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-1 text-sm">
+                    className="px-4 py-2 bg-emerald-300 text-emerald-950 font-bold rounded-lg hover:bg-emerald-400 flex items-center gap-1 text-sm">
                     <Plus size={16} /> Tambah Semester
                 </button>
             </div>
@@ -173,7 +173,7 @@ function JadwalSection({ impersonatedUser }) {
                         onClick={() => setIsAddOpen(true)}
                         disabled={semesters.length === 0 || !selectedSemesterId}
                         title={semesters.length === 0 ? "Buat semester dulu" : (!selectedSemesterId ? "Pilih semester" : "Tambah Jadwal")}
-                        className={`px-4 py-2 text-white rounded-lg flex items-center gap-1 text-sm ${(semesters.length === 0 || !selectedSemesterId) ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}>
+                        className={`px-4 py-2 text-emerald-950 font-bold rounded-lg flex items-center gap-1 text-sm ${(semesters.length === 0 || !selectedSemesterId) ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-300 hover:bg-emerald-400'}`}>
                         <Plus size={16} /> Tambah Jadwal
                     </button>
                 </div>
@@ -181,13 +181,13 @@ function JadwalSection({ impersonatedUser }) {
 
             {/* Semester Warning */}
             {semesters.length === 0 && (
-                <div className="bg-orange-100 border-l-4 border-orange-500 text-orange-700 p-4 mb-4 rounded-r-lg" role="alert">
+                <div className="bg-emerald-100 border-l-4 border-emerald-400 text-emerald-800 p-4 mb-4 rounded-r-lg" role="alert">
                     <p className="font-bold">Belum ada Semester</p>
                     <p className="text-sm">Buat semester di tab <strong>Semester</strong> terlebih dahulu sebelum menambah jadwal kuliah.</p>
                 </div>
             )}
             {semesters.length > 0 && !selectedSemesterId && (
-                <div className="bg-blue-50 border-l-4 border-blue-400 text-blue-700 p-3 mb-4 rounded-r-lg text-sm">
+                <div className="bg-emerald-50 border-l-4 border-emerald-400 text-emerald-800 p-3 mb-4 rounded-r-lg text-sm">
                     Pilih semester dari dropdown untuk melihat atau menambah jadwal.
                 </div>
             )}
@@ -195,12 +195,12 @@ function JadwalSection({ impersonatedUser }) {
             {/* Day Filter Pills */}
             <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
                 <button onClick={() => setFilterDay('All')}
-                    className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${filterDay === 'All' ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                    className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${filterDay === 'All' ? 'bg-black text-emerald-950 font-bold' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                     Semua Hari
                 </button>
                 {daysOfWeek.map(day => (
                     <button key={day} onClick={() => setFilterDay(day)}
-                        className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${filterDay === day ? 'bg-black text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                        className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap transition-colors ${filterDay === day ? 'bg-black text-emerald-950 font-bold' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                         {day}
                     </button>
                 ))}
@@ -212,13 +212,13 @@ function JadwalSection({ impersonatedUser }) {
                         : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {filtered.map(item => (
-                                    <div key={item.id_jadwal} className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition-all border-l-4 border-l-blue-500">
+                                    <div key={item.id_jadwal} className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition-all border-l-4 border-l-emerald-400">
                                         <div className="flex justify-between items-start mb-2">
                                             <div>
                                                 <h3 className="font-bold text-base">{item.nama}</h3>
-                                                <p className="text-blue-600 font-medium text-sm">{item.hari}, {item.jam_mulai?.slice(0, 5)} – {item.jam_selesai?.slice(0, 5)}</p>
+                                                <p className="text-emerald-700 font-medium text-sm">{item.hari}, {item.jam_mulai?.slice(0, 5)} – {item.jam_selesai?.slice(0, 5)}</p>
                                             </div>
-                                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold">{item.sks} SKS</span>
+                                            <span className="bg-emerald-50 text-emerald-800 px-2 py-1 rounded text-xs font-semibold">{item.sks} SKS</span>
                                         </div>
                                         <div className="flex gap-2 mt-3 pt-3 border-t">
                                             <button onClick={() => { setCurrent(item); setIsEditOpen(true); }}
@@ -329,7 +329,7 @@ function UKMSection({ impersonatedUser }) {
                     </div>
                     {addError && <p className="text-red-500 text-sm">{addError}</p>}
                     <button type="submit" disabled={addingUkm}
-                        className="w-full py-2 bg-green-500 text-white rounded-md hover:bg-green-600 text-sm font-medium">
+                        className="w-full py-2 bg-green-500 text-emerald-950 font-bold rounded-md hover:bg-green-600 text-sm font-medium">
                         {addingUkm ? 'Menyimpan...' : 'Tambah UKM'}
                     </button>
                 </form>

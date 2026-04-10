@@ -115,7 +115,7 @@ export default function Profile() {
                 name="nama"
                 value={formData.nama}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
                 required
               />
             </div>
@@ -138,7 +138,7 @@ export default function Profile() {
                 name="telepon"
                 value={formData.telepon}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
               />
             </div>
 
@@ -149,7 +149,7 @@ export default function Profile() {
                 name="lokasi"
                 value={formData.lokasi}
                 onChange={handleChange}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
               />
             </div>
           </div>
@@ -161,7 +161,7 @@ export default function Profile() {
               value={formData.bio}
               onChange={handleChange}
               rows="3"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
             ></textarea>
           </div>
 
@@ -175,7 +175,7 @@ export default function Profile() {
                   name="umur"
                   value={formData.umur}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
                 />
               </div>
               <div>
@@ -185,7 +185,7 @@ export default function Profile() {
                   name="target_karir"
                   value={formData.target_karir}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function Profile() {
                 value={formData.minat}
                 onChange={handleChange}
                 rows="2"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
               ></textarea>
             </div>
             
@@ -208,7 +208,7 @@ export default function Profile() {
                 value={formData.keterampilan}
                 onChange={handleChange}
                 rows="2"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
               ></textarea>
             </div>
             
@@ -219,7 +219,7 @@ export default function Profile() {
                 value={formData.kepribadian}
                 onChange={handleChange}
                 rows="2"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
               ></textarea>
             </div>
 
@@ -232,7 +232,7 @@ export default function Profile() {
                   onChange={handleChange}
                   placeholder="e.g. Visual, Audio, Kinesthetic"
                   rows="2"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
                 ></textarea>
               </div>
               <div>
@@ -243,7 +243,7 @@ export default function Profile() {
                   onChange={handleChange}
                   placeholder="e.g. 1 hour a day, Weekends only"
                   rows="2"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
                 ></textarea>
               </div>
             </div>
@@ -260,7 +260,7 @@ export default function Profile() {
                 value={formData.calendar_name}
                 onChange={handleChange}
                 placeholder="My Campus"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
               />
             </div>
           </div>
@@ -275,7 +275,7 @@ export default function Profile() {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:shadow-lg disabled:opacity-70 flex items-center gap-2 transition-all"
+              className="px-6 py-2.5 bg-emerald-300 text-emerald-950 font-bold font-medium rounded-lg hover:shadow-lg disabled:opacity-70 flex items-center gap-2 transition-all"
             >
               {loading ? <RefreshCw className="animate-spin" size={20} /> : <Save size={20} />}
               Save Changes

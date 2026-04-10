@@ -7,7 +7,7 @@ import Profile from "./pages/Profile";
 import Dashboard from "./components/Dashboard"
 import Home from "./pages/Home";
 import Users from "./pages/Users";
-import Todos from "./pages/Todos";
+import Planner from "./pages/Planner";
 import Akademik from "./pages/Akademik";
 import CareerAnalysis from "./pages/CareerAnalysis";
 import Onboarding from "./pages/Onboarding";
@@ -67,7 +67,7 @@ function App() {
                 <Route path="chat-ai" element={<ChatAI />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="users" element={<Users />} />
-                <Route path="todos" element={<Todos />} />
+                <Route path="planner" element={<Planner />} />
                 <Route path="akademik" element={<Akademik />} />
                 <Route path="career-analysis" element={<CareerAnalysis />} />
               </Route>

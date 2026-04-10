@@ -2,7 +2,6 @@ import client from '../api/client';
 
 const checkAuth = async () => {
     try {
-        // We use the new /api/me endpoint
         const response = await client.get('/api/me');
         return response.data;
     } catch (error) {
@@ -10,17 +9,27 @@ const checkAuth = async () => {
     }
 };
 
-const login = () => {
-    // Redirect to backend auth
-    window.location.href = 'http://localhost:8000/login';
+const login = async (email, password) => {
+    const response = await client.post('/auth/login', { email, password });
+    return response.data;
+};
+
+const register = async ({ nama, username, email, password }) => {
+    const response = await client.post('/auth/register', { nama, username, email, password });
+    return response.data;
 };
 
 const logout = async () => {
-    window.location.href = 'http://localhost:8000/logout';
+    try {
+        await client.post('/auth/logout');
+    } catch (_) {}
+    // Force reload to clear all state
+    window.location.href = '/';
 };
 
 export default {
     checkAuth,
     login,
+    register,
     logout
 };

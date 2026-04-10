@@ -68,7 +68,7 @@ export const AddRutinitasModal = ({ isOpen, onClose, onAddRutinitas, impersonate
                     
                     <div className="flex justify-end space-x-2 pt-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400" disabled={adding}>Batal</button>
-                        <button type="submit" className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600" disabled={adding}>
+                        <button type="submit" className="px-4 py-2 bg-emerald-400 text-emerald-950 font-bold rounded-md hover:bg-emerald-300" disabled={adding}>
                             {adding ? 'Menyimpan...' : 'Simpan'}
                         </button>
                     </div>
@@ -139,7 +139,7 @@ export const EditRutinitasModal = ({ isOpen, onClose, onUpdateRutinitas, rutinit
                     
                     <div className="flex justify-end space-x-2 pt-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400" disabled={updating}>Batal</button>
-                        <button type="submit" className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600" disabled={updating}>
+                        <button type="submit" className="px-4 py-2 bg-emerald-400 text-emerald-950 font-bold rounded-md hover:bg-emerald-300" disabled={updating}>
                             {updating ? 'Update...' : 'Update'}
                         </button>
                     </div>

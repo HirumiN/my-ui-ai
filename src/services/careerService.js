@@ -34,7 +34,45 @@ const careerService = {
   updateCareerProgress: async (progressId, status) => {
     const response = await client.put(`/api/career-progress/${progressId}`, { status });
     return response.data;
-  }
+  },
+
+  // ── NEW: Step CRUD ──
+  completeStep: async (stepId) => {
+    const response = await client.patch(`/api/roadmap/steps/${stepId}/complete`);
+    return response.data;
+  },
+
+  editStep: async (stepId, data) => {
+    const response = await client.patch(`/api/roadmap/steps/${stepId}`, data);
+    return response.data;
+  },
+
+  addStep: async (data) => {
+    const response = await client.post(`/api/roadmap/steps`, data);
+    return response.data;
+  },
+
+  deleteStep: async (stepId) => {
+    const response = await client.delete(`/api/roadmap/steps/${stepId}`);
+    return response.data;
+  },
+
+  // ── NEW: Skill Gap ──
+  getSkillGap: async () => {
+    const response = await client.get(`/api/skill-gap`);
+    return response.data;
+  },
+
+  // ── NEW: Adapt Roadmap (Preview Mode) ──
+  adaptRoadmapPreview: async (roadmapId, userMessage) => {
+    const response = await client.post(`/api/roadmap/${roadmapId}/adapt/preview`, { user_message: userMessage });
+    return response.data;
+  },
+
+  adaptRoadmapApply: async (roadmapId, changes) => {
+    const response = await client.post(`/api/roadmap/${roadmapId}/adapt/apply`, changes);
+    return response.data;
+  },
 };
 
 export default careerService;

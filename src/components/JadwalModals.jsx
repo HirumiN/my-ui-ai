@@ -140,7 +140,7 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                            className="px-4 py-2 bg-green-500 text-emerald-950 font-bold rounded-md hover:bg-green-600"
                             disabled={addingJadwal}
                         >
                             {addingJadwal ? 'Adding...' : 'Add Schedule'}
@@ -265,7 +265,7 @@ export const EditJadwalModal = ({ isOpen, onClose, onUpdateJadwal, jadwalItem, d
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className="px-4 py-2 bg-emerald-400 text-emerald-950 font-bold rounded-md hover:bg-emerald-300"
                             disabled={updatingJadwal}
                         >
                             {updatingJadwal ? 'Updating...' : 'Update Schedule'}

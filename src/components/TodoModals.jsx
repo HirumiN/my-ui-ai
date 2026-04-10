@@ -110,7 +110,7 @@ export const AddTodoModal = ({ isOpen, onClose, onAddTodo, impersonatedUser }) =
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                            className="px-4 py-2 bg-green-500 text-emerald-950 font-bold rounded-md hover:bg-green-600"
                             disabled={addingTodo}
                         >
                             {addingTodo ? 'Adding...' : 'Add Task'}
@@ -221,7 +221,7 @@ export const EditTodoModal = ({ isOpen, onClose, onUpdateTodo, todo }) => {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                            className="px-4 py-2 bg-emerald-400 text-emerald-950 font-bold rounded-md hover:bg-emerald-300"
                             disabled={updatingTodo}
                         >
                             {updatingTodo ? 'Updating...' : 'Update Task'}

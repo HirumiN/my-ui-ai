@@ -134,7 +134,7 @@ export default function Todos() {
 
                     <button
                         onClick={() => activeTab === 'todos' ? setIsAddModalOpen(true) : setIsAddRutModalOpen(true)}
-                        className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-1 transition-all shadow-md"
+                        className="px-4 py-2 bg-black text-emerald-950 font-bold rounded-lg hover:bg-gray-800 flex items-center gap-1 transition-all shadow-md"
                         disabled={!impersonatedUser}
                     >
                         <Plus size={18} /> {activeTab === 'todos' ? 'Tambah Task' : 'Tambah Habit'}
@@ -151,7 +151,7 @@ export default function Todos() {
                     <div className="flex items-center gap-2"><CheckSquare size={16} /> Todo List</div>
                 </button>
                 <button 
-                    className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'rutinitas' ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'rutinitas' ? 'border-b-2 border-emerald-500 text-emerald-700' : 'text-gray-400 hover:text-gray-600'}`}
                     onClick={() => setActiveTab('rutinitas')}
                 >
                     <div className="flex items-center gap-2"><Repeat size={16} /> Rutinitas / Habits</div>
@@ -183,7 +183,7 @@ export default function Todos() {
                                 <button
                                     key={p}
                                     onClick={() => setFilterPriority(p)}
-                                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filterPriority === p ? 'bg-black text-white shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filterPriority === p ? 'bg-black text-emerald-950 font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                 >
                                     {p !== 'Semua' && <Flag size={12} />}
                                     {p}
@@ -267,24 +267,24 @@ export default function Todos() {
                     ) : error ? (
                         <p className="text-red-500">{error}</p>
                     ) : rutinitas.length === 0 ? (
-                        <div className="text-center p-10 bg-indigo-50 rounded-lg border border-dashed border-indigo-200">
-                            <Repeat className="mx-auto mb-2 text-indigo-300" size={40} />
-                            <p className="text-indigo-500 font-medium">Belum ada daftar rutinitas / habit.</p>
-                            <p className="text-indigo-400 text-sm mt-1">Tambahkan agar RAG Gemini lebih memahami kesibukanmu.</p>
+                        <div className="text-center p-10 bg-emerald-50 rounded-lg border border-dashed border-emerald-200">
+                            <Repeat className="mx-auto mb-2 text-emerald-300" size={40} />
+                            <p className="text-emerald-400 font-medium">Belum ada daftar rutinitas / habit.</p>
+                            <p className="text-emerald-400 text-sm mt-1">Tambahkan agar RAG Gemini lebih memahami kesibukanmu.</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {rutinitas.map((rut) => (
-                                <div key={rut.id_rutinitas} className={`bg-gradient-to-br from-white to-indigo-50 border border-indigo-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col`}>
+                                <div key={rut.id_rutinitas} className={`bg-white border border-emerald-100 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col`}>
                                     <div className="flex justify-between items-start mb-3 gap-2">
-                                        <h3 className="font-semibold text-indigo-900 text-lg leading-snug pr-2">{rut.nama}</h3>
+                                        <h3 className="font-semibold text-emerald-900 text-lg leading-snug pr-2">{rut.nama}</h3>
                                         <div className="flex items-center gap-3 shrink-0">
-                                            <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md whitespace-nowrap bg-indigo-100 text-indigo-700 hidden sm:block`}>
+                                            <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md whitespace-nowrap bg-emerald-100 text-emerald-800 hidden sm:block`}>
                                                 <Repeat size={12} className="inline mr-1 mb-0.5"/>Habit
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 mb-3 text-sm text-indigo-600 font-medium">
+                                    <div className="flex items-center gap-2 mb-3 text-sm text-emerald-700 font-medium">
                                         <Calendar size={14} /> {rut.hari}
                                     </div>
                                     {(rut.jam_mulai || rut.jam_selesai) && (
@@ -295,9 +295,9 @@ export default function Todos() {
                                     {rut.deskripsi && (
                                         <p className="text-sm text-gray-600 mb-3 line-clamp-2 bg-white/50 p-2 rounded">{rut.deskripsi}</p>
                                     )}
-                                    <div className="flex gap-2 pt-3 border-t border-indigo-100 mt-auto">
+                                    <div className="flex gap-2 pt-3 border-t border-emerald-100 mt-auto">
                                         <button onClick={() => openEditRutModal(rut)}
-                                            className="flex-1 py-1.5 border border-indigo-200 rounded-lg text-sm flex items-center justify-center gap-1 hover:bg-white text-indigo-700 bg-indigo-50/50">
+                                            className="flex-1 py-1.5 border border-emerald-200 rounded-lg text-sm flex items-center justify-center gap-1 hover:bg-white text-emerald-800 bg-emerald-50/50">
                                             <Edit size={14} /> Edit
                                         </button>
                                         <button onClick={() => handleDeleteRutinitas(rut.id_rutinitas)}

@@ -109,7 +109,7 @@ export default function ChatAI() {
     <div className="flex flex-col h-full bg-gray-50">
       <h1 className="text-2xl font-semibold text-gray-800 p-6 pb-2">AI Chat</h1>
       <div className="px-6 pb-4">
-        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-3" role="alert">
+        <div className="bg-emerald-100 border-l-4 border-emerald-400 text-emerald-800 p-3" role="alert">
           <p className="font-bold">Chatting as:</p>
           <p>{impersonatedUser.nama} (ID: {impersonatedUser.id_user})</p>
         </div>
@@ -121,7 +121,7 @@ export default function ChatAI() {
             <div
               className={`max-w-xl p-3 rounded-lg shadow-md ${
                 msg.role === 'user'
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-emerald-400 text-emerald-950 font-bold'
                   : 'bg-gray-200 text-gray-800'
               }`}
             >
@@ -143,7 +143,7 @@ export default function ChatAI() {
         <form onSubmit={handleSendMessage} className="flex space-x-3">
           <input
             type="text"
-            className="flex-1 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             placeholder="Ask me anything..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -151,7 +151,7 @@ export default function ChatAI() {
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="px-6 py-3 bg-emerald-300 text-emerald-950 font-bold rounded-lg hover:bg-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             disabled={loadingResponse || !input.trim()}
           >
             Send

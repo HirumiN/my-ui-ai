@@ -17,7 +17,7 @@ const STEPS_CONFIG = [
     field: 'universitas',
     title: 'Di mana Kampus / Tempat Studi Anda?',
     subtitle: 'Nama institusi pendidikan saat ini.',
-    options: ['Universitas Indonesia', 'Institut Teknologi Bandung', 'Universitas Gadjah Mada', 'Universitas Brawijaya', 'Institut Teknologi Sepuluh Nopember'],
+    options: ['Politeknik Perkapalan Negeri Surabaya', 'Politeknik Elektronika Negeri Surabaya', 'Universitas Islam Negeri Surabaya', 'Universitas Surabaya', 'Universitas Airlangga', 'Institut Teknologi Sepuluh Nopember'],
     placeholder: 'Ketik nama Universitas...',
     type: 'text',
     multiSelect: false
