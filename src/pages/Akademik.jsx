@@ -3,136 +3,44 @@ import { useUser } from '../contexts/UserContext';
 import dataService from '../services/dataService';
 import { AddSemesterModal, EditSemesterModal } from '../components/SemesterModal';
 import { AddJadwalModal, EditJadwalModal } from '../components/JadwalModals';
-import { Plus, Edit, Trash2, BookOpen, Calendar, Users, RefreshCw } from 'lucide-react';
+import CurriculumModal from '../components/CurriculumModal';
+import { Plus, Edit, Trash2, BookOpen, Calendar, Users, RefreshCw, Link as LinkIcon } from 'lucide-react';
 
 const TABS = [
     { key: 'jadwal', label: 'Jadwal Kuliah', icon: BookOpen },
-    { key: 'semester', label: 'Semester', icon: Calendar },
-
     { key: 'ukm', label: 'UKM', icon: Users },
 ];
 
 const daysOfWeek = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
 
 // ─────────────── SEMESTER SECTION ───────────────
-function SemesterSection({ impersonatedUser }) {
-    const [semesters, setSemesters] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [current, setCurrent] = useState(null);
-
-    const fetch_ = useCallback(async () => {
-        if (!impersonatedUser) { setSemesters([]); setLoading(false); return; }
-        setLoading(true);
-        try {
-            const res = await dataService.getSemesters();
-            setSemesters(res.data);
-        } catch (e) { setError(e.message); }
-        finally { setLoading(false); }
-    }, [impersonatedUser]);
-
-    useEffect(() => { fetch_(); }, [fetch_]);
-
-    const handleAdd = async (data) => {
-        await dataService.createSemester({ ...data, id_user: impersonatedUser.id_user });
-        fetch_();
-    };
-    const handleUpdate = async (data) => {
-        await dataService.updateSemester(data.id_semester, { ...data, id_user: impersonatedUser.id_user });
-        fetch_();
-    };
-    const handleDelete = async (id) => {
-        if (window.confirm('Hapus semester ini beserta semua jadwal dan kalender Google-nya?')) {
-            await dataService.deleteSemester(id);
-            fetch_();
-        }
-    };
-
-    if (!impersonatedUser) return <LoginPrompt />;
-    if (loading) return <p className="text-gray-500">Memuat semester...</p>;
-    if (error) return <p className="text-red-500">{error}</p>;
-
-    return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <p className="text-gray-500 text-sm">Kelola semester akademik (sinkron dengan Google Kalender)</p>
-                <button onClick={() => setIsAddOpen(true)}
-                    className="px-4 py-2 bg-emerald-300 text-emerald-950 font-bold rounded-lg hover:bg-emerald-400 flex items-center gap-1 text-sm">
-                    <Plus size={16} /> Tambah Semester
-                </button>
-            </div>
-
-            {semesters.length === 0 ? (
-                <EmptyState message="Belum ada semester. Buat semester terlebih dahulu!" />
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {semesters.map(sem => (
-                        <div key={sem.id_semester} className="bg-white border rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative">
-                            <div className="absolute top-4 right-4 flex gap-2">
-                                <button onClick={() => { setCurrent(sem); setIsEditOpen(true); }} className="p-1 hover:bg-gray-100 rounded text-gray-600"><Edit size={16} /></button>
-                                <button onClick={() => handleDelete(sem.id_semester)} className="p-1 hover:bg-red-50 rounded text-red-500"><Trash2 size={16} /></button>
-                            </div>
-                            <h3 className="font-bold text-lg mb-1">{sem.tipe} {sem.tahun_ajaran}</h3>
-                            <div className="text-sm text-gray-500 mb-3">
-                                <p>Mulai: {sem.tanggal_mulai}</p>
-                                <p>Selesai: {sem.tanggal_selesai}</p>
-                            </div>
-                            {sem.google_calendar_id && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Google Calendar Synced
-                                </span>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <AddSemesterModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} onAddSemester={handleAdd} impersonatedUser={impersonatedUser} />
-            <EditSemesterModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onUpdateSemester={handleUpdate} semester={current} />
-        </div>
-    );
-}
+// Semester section removed
 
 // ─────────────── JADWAL SECTION ───────────────
 function JadwalSection({ impersonatedUser }) {
     const [jadwal, setJadwal] = useState([]);
-    const [semesters, setSemesters] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedSemesterId, setSelectedSemesterId] = useState('');
     const [filterDay, setFilterDay] = useState('All');
+    const [selectedSemesterLevel, setSelectedSemesterLevel] = useState(1);
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [current, setCurrent] = useState(null);
-
-    const fetchSemesters = useCallback(async () => {
-        if (!impersonatedUser) return;
-        try {
-            const res = await dataService.getSemesters();
-            setSemesters(res.data);
-            if (res.data.length > 0 && !selectedSemesterId) {
-                setSelectedSemesterId(res.data[0].id_semester);
-            }
-        } catch (e) { console.error(e); }
-    }, [impersonatedUser, selectedSemesterId]);
 
     const fetchJadwal = useCallback(async () => {
         if (!impersonatedUser) { setJadwal([]); setLoading(false); return; }
         setLoading(true);
         try {
-            const res = await dataService.getJadwal(selectedSemesterId || null);
+            const res = await dataService.getJadwal();
             setJadwal(res.data);
         } catch (e) { setError(e.message); }
         finally { setLoading(false); }
-    }, [impersonatedUser, selectedSemesterId]);
+    }, [impersonatedUser]);
 
-    useEffect(() => { fetchSemesters(); }, [fetchSemesters]);
     useEffect(() => { fetchJadwal(); }, [fetchJadwal]);
 
     const handleAdd = async (data) => {
-        await dataService.createJadwal({ ...data, id_user: impersonatedUser.id_user, id_semester: selectedSemesterId || null });
+        await dataService.createJadwal({ ...data, id_user: impersonatedUser.id_user, semester_level: selectedSemesterLevel });
         fetchJadwal();
     };
     const handleUpdate = async (data) => {
@@ -143,7 +51,11 @@ function JadwalSection({ impersonatedUser }) {
         if (window.confirm('Hapus jadwal ini?')) { await dataService.deleteJadwal(id); fetchJadwal(); }
     };
 
-    const filtered = jadwal.filter(item => filterDay === 'All' || item.hari === filterDay);
+    const filtered = jadwal.filter(item => {
+        const dayMatch = filterDay === 'All' || item.hari === filterDay;
+        const semMatch = item.semester_level === parseInt(selectedSemesterLevel);
+        return dayMatch && semMatch;
+    });
 
     if (!impersonatedUser) return <LoginPrompt />;
 
@@ -151,46 +63,27 @@ function JadwalSection({ impersonatedUser }) {
         <div>
             {/* Controls */}
             <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
-                <div className="flex gap-2">
-                    <button onClick={async () => {
-                        if (window.confirm("Resync semua kalender?")) {
-                            try { await dataService.manualSync(); alert("Sync berhasil!"); }
-                            catch (e) { alert("Sync gagal: " + e.message); }
-                        }
-                    }} className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2 border text-sm">
-                        <RefreshCw size={14} /> Resync
-                    </button>
-                </div>
                 <div className="flex gap-2 items-center">
-                    <select value={selectedSemesterId} onChange={e => setSelectedSemesterId(e.target.value)}
-                        className="border p-2 rounded-lg text-sm bg-white shadow-sm">
-                        <option value="">Semua Semester</option>
-                        {semesters.map(s => (
-                            <option key={s.id_semester} value={s.id_semester}>{s.tipe} {s.tahun_ajaran}</option>
+                    <label className="text-sm font-medium text-gray-700">Filter Semester:</label>
+                    <select 
+                        value={selectedSemesterLevel} 
+                        onChange={e => setSelectedSemesterLevel(e.target.value)}
+                        className="border border-gray-300 rounded-lg p-1.5 text-sm bg-white shadow-sm font-semibold text-emerald-800"
+                    >
+                        {[1,2,3,4,5,6,7,8].map(sem => (
+                            <option key={sem} value={sem}>Semester {sem}</option>
                         ))}
                     </select>
+                </div>
+                <div className="flex gap-2 items-center">
                     <button
                         onClick={() => setIsAddOpen(true)}
-                        disabled={semesters.length === 0 || !selectedSemesterId}
-                        title={semesters.length === 0 ? "Buat semester dulu" : (!selectedSemesterId ? "Pilih semester" : "Tambah Jadwal")}
-                        className={`px-4 py-2 text-emerald-950 font-bold rounded-lg flex items-center gap-1 text-sm ${(semesters.length === 0 || !selectedSemesterId) ? 'bg-emerald-400 cursor-not-allowed' : 'bg-emerald-300 hover:bg-emerald-400'}`}>
+                        className="px-4 py-2 bg-emerald-300 text-emerald-950 font-bold rounded-lg hover:bg-emerald-400 flex items-center gap-1 text-sm">
                         <Plus size={16} /> Tambah Jadwal
                     </button>
                 </div>
             </div>
 
-            {/* Semester Warning */}
-            {semesters.length === 0 && (
-                <div className="bg-emerald-100 border-l-4 border-emerald-400 text-emerald-800 p-4 mb-4 rounded-r-lg" role="alert">
-                    <p className="font-bold">Belum ada Semester</p>
-                    <p className="text-sm">Buat semester di tab <strong>Semester</strong> terlebih dahulu sebelum menambah jadwal kuliah.</p>
-                </div>
-            )}
-            {semesters.length > 0 && !selectedSemesterId && (
-                <div className="bg-emerald-50 border-l-4 border-emerald-400 text-emerald-800 p-3 mb-4 rounded-r-lg text-sm">
-                    Pilih semester dari dropdown untuk melihat atau menambah jadwal.
-                </div>
-            )}
 
             {/* Day Filter Pills */}
             <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
@@ -237,7 +130,7 @@ function JadwalSection({ impersonatedUser }) {
             }
 
             <AddJadwalModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} onAddJadwal={handleAdd}
-                impersonatedUser={impersonatedUser} daysOfWeek={daysOfWeek} semesterId={selectedSemesterId} />
+                impersonatedUser={impersonatedUser} daysOfWeek={daysOfWeek} />
             <EditJadwalModal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} onUpdateJadwal={handleUpdate}
                 jadwalItem={current} daysOfWeek={daysOfWeek} />
         </div>
@@ -358,7 +251,7 @@ function EmptyState({ message }) {
 // ─────────────── MAIN PAGE ───────────────
 export default function Akademik() {
     const { impersonatedUser } = useUser();
-    const [activeTab, setActiveTab] = useState('semester');
+    const [activeTab, setActiveTab] = useState('jadwal');
 
     return (
         <div className="p-6">
@@ -386,7 +279,6 @@ export default function Akademik() {
             </div>
 
             {/* Tab Content */}
-            {activeTab === 'semester' && <SemesterSection impersonatedUser={impersonatedUser} />}
             {activeTab === 'jadwal' && <JadwalSection impersonatedUser={impersonatedUser} />}
             {activeTab === 'ukm' && <UKMSection impersonatedUser={impersonatedUser} />}
         </div>

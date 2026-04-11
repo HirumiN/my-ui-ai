@@ -103,23 +103,6 @@ export default function Jadwal() {
             {/* Actions Bar */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex gap-2">
-                    <button
-                        onClick={async () => {
-                            if (window.confirm("Resync all calendars (Semesters, Todos, Matkul)? This might take a moment.")) {
-                                try {
-                                    await dataService.manualSync();
-                                    alert("Sync triggered!");
-                                } catch (e) {
-                                    alert("Sync failed: " + e.message);
-                                }
-                            }
-                        }}
-                        className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2 border"
-                        disabled={!impersonatedUser}
-                        title="Force resync with Google Calendar"
-                    >
-                        <RefreshCw size={16} /> Resync
-                    </button>
                 </div>
 
                 <div className="flex gap-2">

@@ -75,7 +75,7 @@ export default function Semesters() {
     };
 
     const handleDeleteSemester = async (id) => {
-        if (window.confirm('Are you sure? This will delete the associated Google Calendar and all schedules!')) {
+        if (window.confirm('Are you sure? This will delete all schedules for this semester!')) {
             await dataService.deleteSemester(id);
             fetchSemesters();
         }
@@ -91,7 +91,7 @@ export default function Semesters() {
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-2"><Calendar /> Semesters</h2>
-                    <p className="text-gray-500 text-sm">Manage your academic semesters (Syncs with Google Calendar)</p>
+                    <p className="text-gray-500 text-sm">Manage your academic semesters</p>
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
@@ -127,11 +127,6 @@ export default function Semesters() {
                                 <p>Start: {sem.tanggal_mulai}</p>
                                 <p>End: {sem.tanggal_selesai}</p>
                             </div>
-                            {sem.google_calendar_id && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Google Calendar Synced
-                                </span>
-                            )}
                         </div>
                     ))}
                 </div>

@@ -54,5 +54,11 @@ export default {
     getRutinitas,
     createRutinitas,
     updateRutinitas,
-    deleteRutinitas
+    deleteRutinitas,
+    
+    // CURRICULUM
+    getCampuses: () => client.get('/api/campuses'),
+    getDepartments: (campusId) => client.get(`/api/campuses/${campusId}/departments`),
+    getCurricula: (deptId) => client.get(`/api/departments/${deptId}/curricula`),
+    connectCurriculum: (params) => client.post('/api/connect-curriculum', null, { params })
 };

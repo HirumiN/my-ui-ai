@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import dataService from '../services/dataService';
 import { ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
@@ -16,19 +16,19 @@ const STEPS_CONFIG = [
   {
     field: 'universitas',
     title: 'Di mana Kampus / Tempat Studi Anda?',
-    subtitle: 'Nama institusi pendidikan saat ini.',
-    options: ['Politeknik Perkapalan Negeri Surabaya', 'Politeknik Elektronika Negeri Surabaya', 'Universitas Islam Negeri Surabaya', 'Universitas Surabaya', 'Universitas Airlangga', 'Institut Teknologi Sepuluh Nopember'],
-    placeholder: 'Ketik nama Universitas...',
-    type: 'text',
+    subtitle: 'Nama institusi pendidikan saat ini (Hanya pilihan tersedia).',
+    options: [],
+    placeholder: 'Pilih Universitas...',
+    type: 'restricted',
     multiSelect: false
   },
   {
     field: 'jurusan',
     title: 'Apa Jurusan / Program Studi Anda?',
-    subtitle: 'Membantu menyusun roadmap teknis linear dengan kurikulum.',
-    options: ['Teknik Informatika', 'Sistem Informasi', 'Ilmu Komputer', 'Data Science', 'Sistem Komputer'],
-    placeholder: 'Sebutkan jurusan Anda...',
-    type: 'text',
+    subtitle: 'Hanya pilihan tersedia untuk sinkronisasi kurikulum.',
+    options: [],
+    placeholder: 'Pilih jurusan Anda...',
+    type: 'restricted',
     multiSelect: false
   },
   {
@@ -123,6 +123,35 @@ export default function Onboarding({ onComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [customInput, setCustomInput] = useState('');
+  const [campuses, setCampuses] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [selectedCampusId, setSelectedCampusId] = useState(null);
+
+  useEffect(() => {
+    const fetchCampuses = async () => {
+      try {
+        const res = await dataService.getCampuses();
+        setCampuses(res.data);
+      } catch (err) {
+        console.error("Failed to fetch campuses", err);
+      }
+    };
+    fetchCampuses();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCampusId) {
+      const fetchDepts = async () => {
+        try {
+          const res = await dataService.getDepartments(selectedCampusId);
+          setDepartments(res.data);
+        } catch (err) {
+          console.error("Failed to fetch departments", err);
+        }
+      };
+      fetchDepts();
+    }
+  }, [selectedCampusId]);
 
   const activeStepConfig = STEPS_CONFIG[currentStep];
 
@@ -284,8 +313,11 @@ export default function Onboarding({ onComplete }) {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {/* 1. Predefined options */}
-                {activeStepConfig.options.map((option, idx) => {
+                {/* 1. Predefined/Dynamic options */}
+                {(activeStepConfig.type === 'restricted' 
+                  ? (activeStepConfig.field === 'universitas' ? campuses.map(c => c.name) : departments.map(d => d.name))
+                  : activeStepConfig.options
+                ).map((option, idx) => {
                   const isSelected = activeStepConfig.multiSelect
                     ? (formData[activeStepConfig.field] || '').split(', ').includes(option)
                     : formData[activeStepConfig.field] === option;
@@ -294,7 +326,13 @@ export default function Onboarding({ onComplete }) {
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect)}
+                      onClick={() => {
+                        handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect);
+                        if (activeStepConfig.field === 'universitas') {
+                          const campus = campuses.find(c => c.name === option);
+                          if (campus) setSelectedCampusId(campus.id);
+                        }
+                      }}
                       className={`px-5 py-3 border rounded-full md:text-base font-medium transition-all duration-200 ${isSelected
                         ? 'bg-blue-600 text-white border-blue-600 shadow-lg ring-4 ring-blue-200 ring-offset-2 transform scale-105'
                         : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
@@ -304,25 +342,11 @@ export default function Onboarding({ onComplete }) {
                     </button>
                   );
                 })}
-                {/* 2. Custom selected options not in the predefined list */}
-                {activeStepConfig.multiSelect && (formData[activeStepConfig.field] || '').split(', ').filter(Boolean).map((customOpt, cIdx) => {
-                  if (activeStepConfig.options.includes(customOpt)) return null;
-                  return (
-                    <button
-                      key={`custom-${cIdx}`}
-                      type="button"
-                      onClick={() => handleOptionClick(activeStepConfig.field, customOpt, true)}
-                      className="px-5 py-3 border rounded-full md:text-base font-medium transition-all duration-200 bg-blue-600 text-white border-blue-600 shadow-lg ring-4 ring-blue-200 ring-offset-2 transform scale-105"
-                    >
-                      {customOpt} <span className="ml-1 text-xs opacity-80 hover:opacity-100">✕</span>
-                    </button>
-                  );
-                })}
               </div>
             )}
 
-            {/* Manual input fallback */}
-            {activeStepConfig.type !== 'custom_skill_level' && (
+            {/* Manual input fallback - Hide for restricted types */}
+            {activeStepConfig.type !== 'custom_skill_level' && activeStepConfig.type !== 'restricted' && (
               <div className="pt-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Atau Isi Sendiri:</label>
                 {(activeStepConfig.type === 'number' || !activeStepConfig.multiSelect) ? (

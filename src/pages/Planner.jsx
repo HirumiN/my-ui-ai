@@ -227,7 +227,11 @@ export default function Planner() {
     const completedTodos = todos.filter(t => t.is_completed);
     const filteredTodos = filterPriority === 'Semua' ? activeTodos : activeTodos.filter(t => t.tipe === filterPriority);
 
-    const todayJadwal = jadwal.filter(j => j.hari === TODAY_NAME).sort((a,b) => (a.jam_mulai || '').localeCompare(b.jam_mulai || ''));
+    const userSemester = impersonatedUser?.semester_sekarang ? parseInt(impersonatedUser.semester_sekarang) : null;
+    const todayJadwal = jadwal.filter(j => 
+        j.hari === TODAY_NAME && 
+        (!userSemester || !j.semester_level || j.semester_level === userSemester)
+    ).sort((a,b) => (a.jam_mulai || '').localeCompare(b.jam_mulai || ''));
     const todayRutinitas = rutinitas.filter(r => r.hari === TODAY_NAME || r.hari === 'Setiap Hari').sort((a,b) => (a.jam_mulai || '').localeCompare(b.jam_mulai || ''));
 
     const todaysAgenda = [
@@ -270,7 +274,7 @@ export default function Planner() {
                 {[
                     { id: 'agenda', label: 'Overview Hari Ini', icon: Calendar },
                     { id: 'todos', label: 'Semua Task & Habit', icon: CheckCircle },
-                    { id: 'akademik', label: 'Akademik & Semester', icon: BookOpen }
+                    { id: 'akademik', label: 'Akademik & Jadwal', icon: BookOpen }
                 ].map(tab => {
                     const Icon = tab.icon;
                     return (
@@ -326,14 +330,14 @@ export default function Planner() {
                 fetchData();
             }} impersonatedUser={impersonatedUser} />
             
-            <AddJadwalModal 
+             <AddJadwalModal 
                  isOpen={isAddJadwalOpen} 
                  onClose={() => setIsAddJadwalOpen(false)} 
                  onAddJadwal={async (data) => {
                      await dataService.createJadwal({ ...data });
                      fetchData();
                  }} 
-                 semesters={[]} 
+                 daysOfWeek={DAYS}
             />
         </div>
     );

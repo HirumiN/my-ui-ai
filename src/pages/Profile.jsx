@@ -18,8 +18,13 @@ export default function Profile() {
     kepribadian: '',
     target_karir: '',
     gaya_belajar: '',
-    waktu_luang: ''
+    waktu_luang: '',
+    universitas: '',
+    jurusan: ''
   });
+  const [campuses, setCampuses] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [selectedCampusId, setSelectedCampusId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -38,10 +43,44 @@ export default function Profile() {
         kepribadian: impersonatedUser.kepribadian || '',
         target_karir: impersonatedUser.target_karir || '',
         gaya_belajar: impersonatedUser.gaya_belajar || '',
-        waktu_luang: impersonatedUser.waktu_luang || ''
+        waktu_luang: impersonatedUser.waktu_luang || '',
+        universitas: impersonatedUser.universitas || '',
+        jurusan: impersonatedUser.jurusan || ''
       });
     }
   }, [impersonatedUser]);
+
+  useEffect(() => {
+    const fetchCampuses = async () => {
+      try {
+        const res = await dataService.getCampuses();
+        setCampuses(res.data);
+        
+        // If user already has a university, try to find its ID to fetch departments
+        if (formData.universitas) {
+          const matched = res.data.find(c => c.name === formData.universitas);
+          if (matched) setSelectedCampusId(matched.id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch campuses", err);
+      }
+    };
+    fetchCampuses();
+  }, [!!formData.universitas]); // Initial load and if universitas ever resets to non-empty
+
+  useEffect(() => {
+    if (selectedCampusId) {
+      const fetchDepts = async () => {
+        try {
+          const res = await dataService.getDepartments(selectedCampusId);
+          setDepartments(res.data);
+        } catch (err) {
+          console.error("Failed to fetch departments", err);
+        }
+      };
+      fetchDepts();
+    }
+  }, [selectedCampusId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,6 +108,8 @@ export default function Profile() {
       data.append('target_karir', formData.target_karir);
       data.append('gaya_belajar', formData.gaya_belajar);
       data.append('waktu_luang', formData.waktu_luang);
+      data.append('universitas', formData.universitas);
+      data.append('jurusan', formData.jurusan);
 
       // Using dataService to post to /update-user/{id}
       // Note: checkAuth() in context might need to reload user to reflect changes locally if API returns redirect. 
@@ -167,25 +208,62 @@ export default function Profile() {
 
           <div className="pt-4 border-t">
             <h3 className="text-lg font-semibold text-gray-800 mb-3">AI Personalization Profile</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Age</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Universitas (Kampus)</label>
+                <select
+                  name="universitas"
+                  value={formData.universitas}
+                  onChange={(e) => {
+                    handleChange(e);
+                    const campus = campuses.find(c => c.name === e.target.value);
+                    if (campus) setSelectedCampusId(campus.id);
+                    else setSelectedCampusId(null);
+                  }}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all bg-white"
+                >
+                  <option value="">Pilih Kampus...</option>
+                  {campuses.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Jurusan</label>
+                <select
+                  name="jurusan"
+                  value={formData.jurusan}
+                  onChange={handleChange}
+                  disabled={!selectedCampusId}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all bg-white disabled:bg-gray-50"
+                >
+                  <option value="">Pilih Jurusan...</option>
+                  {departments.map(d => (
+                    <option key={d.id} value={d.name}>{d.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Umur (Age)</label>
                 <input
                   type="number"
                   name="umur"
                   value={formData.umur}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all font-medium"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Target Career</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Target Karir</label>
                 <input
                   type="text"
                   name="target_karir"
                   value={formData.target_karir}
                   onChange={handleChange}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all font-medium"
                 />
               </div>
             </div>

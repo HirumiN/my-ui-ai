@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser, daysOfWeek, semesterId }) => {
+export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser, daysOfWeek }) => {
     const [newJadwal, setNewJadwal] = useState({
         nama: '',
         hari: '',
@@ -8,7 +8,7 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
         jam_selesai: '',
         sks: 0,
         id_user: impersonatedUser?.id_user || '',
-        id_semester: semesterId || ''
+        semester_level: 1
     });
     const [addingJadwal, setAddingJadwal] = useState(false);
     const [addJadwalError, setAddJadwalError] = useState(null);
@@ -17,9 +17,8 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
         setNewJadwal((prev) => ({
             ...prev,
             id_user: impersonatedUser?.id_user || '',
-            id_semester: semesterId || ''
         }));
-    }, [impersonatedUser, semesterId]);
+    }, [impersonatedUser]);
 
     const handleNewJadwalChange = (e) => {
         const { name, value } = e.target;
@@ -29,10 +28,6 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        if (!newJadwal.id_semester) {
-            setAddJadwalError("A semester must be selected before adding a schedule.");
-            return;
-        }
 
         setAddingJadwal(true);
         setAddJadwalError(null);
@@ -47,7 +42,7 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
                 jam_selesai: '',
                 sks: 0,
                 id_user: impersonatedUser?.id_user || '',
-                id_semester: semesterId || ''
+                semester_level: 1
             });
         } catch (error) {
             setAddJadwalError(error.message);
@@ -128,6 +123,21 @@ export const AddJadwalModal = ({ isOpen, onClose, onAddJadwal, impersonatedUser,
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             required
                         />
+                    </div>
+                    <div>
+                        <label htmlFor="jadwalSemester" className="block text-sm font-medium text-gray-700">Semester</label>
+                        <select
+                            name="semester_level"
+                            id="jadwalSemester"
+                            value={newJadwal.semester_level}
+                            onChange={handleNewJadwalChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            required
+                        >
+                            {[1,2,3,4,5,6,7,8].map(sem => (
+                                <option key={sem} value={sem}>Semester {sem}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="flex justify-end space-x-2">
                         <button
@@ -253,6 +263,21 @@ export const EditJadwalModal = ({ isOpen, onClose, onUpdateJadwal, jadwalItem, d
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             required
                         />
+                    </div>
+                    <div>
+                        <label htmlFor="editJadwalSemester" className="block text-sm font-medium text-gray-700">Semester</label>
+                        <select
+                            name="semester_level"
+                            id="editJadwalSemester"
+                            value={editedJadwal.semester_level || 1}
+                            onChange={handleEditJadwalChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            required
+                        >
+                            {[1,2,3,4,5,6,7,8].map(sem => (
+                                <option key={sem} value={sem}>Semester {sem}</option>
+                            ))}
+                        </select>
                     </div>
                     <div className="flex justify-end space-x-2">
                         <button
