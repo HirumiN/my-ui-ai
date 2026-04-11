@@ -2,11 +2,11 @@ import { NavLink } from "react-router-dom";
 import { Home, MessageSquare, User, LogOut, Briefcase, Sparkles, Calendar as CalendarIcon } from "lucide-react";
 
 const navItems = [
-  { to: "/",               end: true,  icon: Home,          label: "Dashboard"       },
-  { to: "/planner",        end: false, icon: CalendarIcon,  label: "Planner & Agenda" },
-  { to: "/chat-ai",        end: false, icon: MessageSquare, label: "Chat AI"         },
-  { to: "/profile",        end: false, icon: User,          label: "Profil"          },
-  { to: "/career-analysis",end: false, icon: Briefcase,     label: "Karir & Roadmap" },
+  { to: "/", end: true, icon: Home, label: "Dashboard" },
+  { to: "/planner", end: false, icon: CalendarIcon, label: "Planner & Agenda" },
+  { to: "/career-analysis", end: false, icon: Briefcase, label: "Karir & Roadmap" },
+  { to: "/chat-ai", end: false, icon: Sparkles, label: "Chat AI" },
+  { to: "/profile", end: false, icon: User, label: "Profil" },
 ];
 
 export default function Sidebar({ onLogout }) {
@@ -34,10 +34,9 @@ export default function Sidebar({ onLogout }) {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                isActive
-                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 shadow-sm"
-                  : "text-slate-600 hover:bg-emerald-50/50 hover:text-emerald-700"
+              `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${isActive
+                ? "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200 shadow-sm"
+                : "text-slate-600 hover:bg-emerald-50/50 hover:text-emerald-700"
               }`
             }
           >

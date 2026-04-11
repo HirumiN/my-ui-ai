@@ -73,6 +73,11 @@ const careerService = {
     const response = await client.post(`/api/roadmap/${roadmapId}/adapt/apply`, changes);
     return response.data;
   },
+
+  syncProfileSkills: async () => {
+    const response = await client.post(`/api/profile/sync-skills`);
+    return response.data;
+  },
 };
 
 export default careerService;

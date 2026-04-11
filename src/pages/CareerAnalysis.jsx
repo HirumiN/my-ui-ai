@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, TrendingUp } from 'lucide-react';
+import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, TrendingUp, User, Repeat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Roadmap from './Roadmap';
 import SkillGapPanel from '../components/SkillGapPanel';
 
 export default function CareerAnalysis() {
-  const { impersonatedUser: user } = useUser();
+  const { impersonatedUser: user, checkAuth } = useUser();
   const navigate = useNavigate();
   const CACHE_KEY = user ? `career_analysis_draft_${user.id_user}` : null;
 
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      const res = await careerService.syncProfileSkills();
+      if (res.profile_updated && checkAuth) {
+        await checkAuth();
+      }
+      alert(res.message);
+    } catch (e) {
+      console.error(e);
+      alert("Gagal sinkronisasi profil.");
+    } finally {
+      setSyncing(false);
+    }
+  };
   const [resultData, setResultData] = useState(() => {
     if (!CACHE_KEY) return null;
     try {
@@ -105,14 +122,25 @@ export default function CareerAnalysis() {
           </div>
         </div>
 
-        <button
-          onClick={handleGenerate}
-          disabled={loading}
-          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md shadow-indigo-100 transition disabled:opacity-60 text-sm"
-        >
-          {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Briefcase size={16} />}
-          {loading ? 'AI Menganalisis...' : 'Analisis Karir Baru'}
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 font-semibold px-5 py-2.5 rounded-xl hover:bg-slate-50 transition shadow-sm text-sm disabled:opacity-70"
+          >
+            {syncing ? <RefreshCw size={16} className="animate-spin" /> : <Repeat size={16} />}
+            Sinkronisasi Skill
+          </button>
+
+          <button
+            onClick={handleGenerate}
+            disabled={loading}
+            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md shadow-indigo-100 transition disabled:opacity-60 text-sm"
+          >
+            {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Briefcase size={16} />}
+            {loading ? 'AI Menganalisis...' : 'Analisis Karir Baru'}
+          </button>
+        </div>
       </div>
 
       {error && (

@@ -5,7 +5,7 @@ import RoadmapChat, { XPToast } from '../components/RoadmapChat';
 import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
 
 export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
-  const { impersonatedUser: user } = useUser();
+  const { impersonatedUser: user, checkAuth } = useUser();
   const [roadmaps, setRoadmaps] = useState([]);
   const [activeRoadmapId, setActiveRoadmapId] = useState(null);
   const [steps, setSteps] = useState([]);
@@ -81,6 +81,9 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
       if (result.skills_updated?.length > 0) {
         setXpToast(result);
         setTimeout(() => setXpToast(null), 5000);
+      }
+      if (result.profile_updated && checkAuth) {
+        await checkAuth();
       }
     } catch (e) { console.error(e); }
   };

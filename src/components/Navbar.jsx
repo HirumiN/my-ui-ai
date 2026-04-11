@@ -6,7 +6,7 @@ const pageTitles = {
   "/":                "Dashboard",
   "/planner":         "Planner & Agenda",
   "/akademik":        "Manajemen Akademik",
-  "/chat-ai":         "Chat AI",
+  "/chat-ai":         "Rekomendasi AI",
   "/profile":         "Profil Saya",
   "/career-analysis": "Karir & Roadmap",
   "/users":           "Manajemen Users",

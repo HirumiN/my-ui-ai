@@ -54,7 +54,7 @@ export default function ChatAI() {
   if (!impersonatedUser) {
     return (
       <div className="p-6">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-4">AI Chat</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mb-4 tracking-tight">Rekomendasi AI</h1>
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4" role="alert">
           <p className="font-bold">No user impersonated.</p>
           <p>Please go to the "Users" page to select a user to start chatting with the AI.</p>
@@ -107,11 +107,11 @@ export default function ChatAI() {
 
   return (
     <div className="flex flex-col h-full bg-gray-50">
-      <h1 className="text-2xl font-semibold text-gray-800 p-6 pb-2">AI Chat</h1>
+      <h1 className="text-2xl font-bold text-slate-800 p-6 pb-2 tracking-tight">Rekomendasi AI</h1>
       <div className="px-6 pb-4">
-        <div className="bg-emerald-100 border-l-4 border-emerald-400 text-emerald-800 p-3" role="alert">
-          <p className="font-bold">Chatting as:</p>
-          <p>{impersonatedUser.nama} (ID: {impersonatedUser.id_user})</p>
+        <div className="bg-emerald-50 border border-emerald-100 text-emerald-800 p-4 rounded-xl" role="alert">
+          <p className="font-bold text-xs uppercase tracking-wider text-emerald-600 mb-1">Konsultasi Sebagai:</p>
+          <p className="font-bold text-base">{impersonatedUser.nama}</p>
         </div>
       </div>
 
