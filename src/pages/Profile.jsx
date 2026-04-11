@@ -208,8 +208,24 @@ export default function Profile() {
                 value={formData.keterampilan}
                 onChange={handleChange}
                 rows="2"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all"
+                placeholder="e.g. Python (Lanjutan), Figma (Pemula)"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-400 transition-all font-mono text-sm"
               ></textarea>
+              {formData.keterampilan && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.keterampilan.split(',').filter(Boolean).map((s, idx) => {
+                    const clean = s.trim();
+                    const parts = clean.split(' (');
+                    const name = parts[0];
+                    const level = parts[1] ? parts[1].replace(')', '') : null;
+                    return (
+                      <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-100 uppercase tracking-tighter">
+                        {name} {level && <span className="text-[8px] opacity-60">({level})</span>}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             
             <div className="mt-4">

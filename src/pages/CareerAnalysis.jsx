@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase } from 'lucide-react';
+import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Roadmap from './Roadmap';
 import SkillGapPanel from '../components/SkillGapPanel';
@@ -23,6 +23,11 @@ export default function CareerAnalysis() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
   const [selectedCareerIdx, setSelectedCareerIdx] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasRoadmap, setHasRoadmap] = useState(true); // Default to true to avoid flicker if needed, but Roadmap will update it
+
+  const handleSkillUpdate = () => setRefreshKey(prev => prev + 1);
 
   useEffect(() => {
     if (!CACHE_KEY) return;
@@ -43,6 +48,7 @@ export default function CareerAnalysis() {
     try {
       const res = await careerService.generateAnalysis(user.id_user);
       setResultData(res.data);
+      setIsModalOpen(true);
     } catch (err) {
       console.error(err);
       setError(err.response?.status === 401
@@ -54,6 +60,10 @@ export default function CareerAnalysis() {
   };
 
   const handleSave = async () => {
+    if (hasRoadmap) {
+      const confirmSave = window.confirm("Anda sudah memiliki roadmap aktif. Menyimpan roadmap baru akan menghapus progress dan roadmap lama Anda. Lanjutkan?");
+      if (!confirmSave) return;
+    }
     setSaveLoading(true);
     try {
       const chosenCareer = resultData.careers ? resultData.careers[selectedCareerIdx] : resultData.career;
@@ -61,6 +71,8 @@ export default function CareerAnalysis() {
       await careerService.saveAnalysis(user.id_user, finalData);
       if (CACHE_KEY) localStorage.removeItem(CACHE_KEY);
       setSaved(true);
+      setIsModalOpen(false);
+      handleSkillUpdate(); // Refresh skill gap after save
     } catch (err) {
       console.error(err);
       alert('Gagal menyimpan hasil karir: ' + (err.response?.data?.detail || err.message));
@@ -81,168 +93,213 @@ export default function CareerAnalysis() {
   return (
     <div className="w-full space-y-10 pb-16">
 
-      {/* ── Section 1: Analisis Karir AI ── */}
-      <section>
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-indigo-100 flex items-center justify-center">
-            <Briefcase size={18} className="text-indigo-600" />
+      {/* ── Page Header with Action Button ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
+            <Briefcase size={20} className="text-indigo-600" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-slate-800">Analisis Karir AI</h2>
-            <p className="text-slate-400 text-xs">Rekomendasi karir berdasarkan profil & aktivitas akademikmu</p>
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Capaian Karir</h1>
+            <p className="text-slate-400 text-xs">Kelola skill gap, pratinjau roadmap, dan analisis karir AI</p>
           </div>
         </div>
 
-        {error && (
-          <div className="mb-5 p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm">
-            {error}
-          </div>
-        )}
+        <button
+          onClick={handleGenerate}
+          disabled={loading}
+          className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md shadow-indigo-100 transition disabled:opacity-60 text-sm"
+        >
+          {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Briefcase size={16} />}
+          {loading ? 'AI Menganalisis...' : 'Analisis Karir Baru'}
+        </button>
+      </div>
 
-        {!resultData && !saved && (
-          <div className="flex flex-col items-center justify-center py-16 border-2 border-dashed border-indigo-100 rounded-2xl bg-indigo-50/50">
-            <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center mb-4">
-              <Briefcase size={24} className="text-indigo-500" />
-            </div>
-            <p className="text-slate-600 text-sm mb-5 text-center max-w-xs">AI akan menganalisis profil, jadwal, dan keterampilanmu untuk memberi rekomendasi karir terbaik.</p>
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-7 py-3 rounded-xl shadow-md shadow-indigo-200 transition disabled:opacity-60"
-            >
-              {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Briefcase size={16} />}
-              {loading ? 'AI Sedang Menganalisis...' : 'Buat Rekomendasi Karir'}
-            </button>
-          </div>
-        )}
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm">
+          {error}
+        </div>
+      )}
 
-        {resultData && !saved && (
-          <div className="space-y-6">
-            {/* Career Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-              {(resultData.careers || (resultData.career ? [resultData.career] : [])).map((careerItem, cIdx) => {
-                const isSelected = selectedCareerIdx === cIdx;
-                return (
-                  <div
-                    key={cIdx}
-                    onClick={() => setSelectedCareerIdx(cIdx)}
-                    className={`p-6 rounded-2xl border relative cursor-pointer transition-all duration-200 ${
-                      isSelected
-                        ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200 shadow-lg shadow-indigo-100'
-                        : 'bg-white border-slate-200 shadow-sm hover:border-indigo-200 hover:shadow-md'
-                    }`}
-                  >
-                    {isSelected && (
-                      <span className="absolute top-4 right-4 w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center">
-                        <Check size={13} className="text-white stroke-[3]" />
-                      </span>
-                    )}
-                    <span className={`inline-block text-[10px] font-bold px-2.5 py-1 rounded-full mb-3 uppercase tracking-wider ${
-                      isSelected ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-500'
-                    }`}>
-                      {cIdx === 0 ? 'Prioritas Utama' : `Alternatif ${cIdx}`}
-                    </span>
-                    <h3 className={`text-lg font-extrabold mb-2 ${isSelected ? 'text-indigo-800' : 'text-slate-800'}`}>
-                      {careerItem.name}
-                    </h3>
-                    <p className="text-slate-600 text-sm leading-relaxed mb-4">{careerItem.reason}</p>
-                    <div className="space-y-3">
-                      <div className="bg-white rounded-xl p-4 border border-emerald-100">
-                        <p className="text-xs font-bold text-emerald-700 mb-2">💪 Kelebihan</p>
-                        <ul className="space-y-1">
-                          {(careerItem.strengths || []).map((s, i) => (
-                            <li key={i} className="text-xs text-slate-600 flex gap-1.5"><span className="text-emerald-500">•</span>{s}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="bg-white rounded-xl p-4 border border-amber-100">
-                        <p className="text-xs font-bold text-amber-700 mb-2">⚖️ Tantangan</p>
-                        <ul className="space-y-1">
-                          {(careerItem.weaknesses || []).map((w, i) => (
-                            <li key={i} className="text-xs text-slate-600 flex gap-1.5"><span className="text-amber-400">•</span>{w}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Info bar */}
-            <div className="bg-indigo-50 border border-indigo-100 p-5 rounded-xl text-indigo-800 text-sm flex items-center gap-4">
-              <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 text-lg">💡</div>
-              <div>
-                <p className="font-bold mb-0.5">Pratinjau berhasil dibuat!</p>
-                <p className="text-indigo-600 text-xs">AI menyusun <strong>{resultData.roadmap?.length || 0} Fase Roadmap</strong> dan <strong>{resultData.tasks?.length || 0} Tugas</strong>. Simpan ke profil untuk mulai menjalankan rencana ini.</p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-wrap gap-3 justify-end">
-              <button
-                onClick={handleGenerate}
-                disabled={loading || saveLoading}
-                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 px-5 py-2.5 rounded-xl font-medium hover:bg-slate-50 transition text-sm shadow-sm"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Buat Ulang
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saveLoading}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-xl shadow-md text-sm font-bold transition text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-70 shadow-indigo-200"
-              >
-                {saveLoading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
-                {saveLoading ? 'Menyimpan...' : 'Simpan ke Profil'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {saved && (
-          <div className="py-10 text-center bg-emerald-50 border border-emerald-100 rounded-2xl">
-            <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Check size={28} className="stroke-[2.5]" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-800 mb-2">Rencana Karir Tersimpan!</h3>
-            <p className="text-slate-500 text-sm mb-6">Roadmap dan daftar tugas sudah ditambahkan ke akunmu.</p>
-            <div className="flex justify-center gap-3">
-              <button
-                onClick={() => navigate('/todos')}
-                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold shadow-sm hover:bg-slate-50 transition"
-              >
-                <ListTodo size={15} /> Buka Todolist <ArrowRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ── Divider ── */}
-      <div className="border-t border-slate-100" />
+      {/* ── Section 1: Skill Gap (NOW TOP) ── */}
+      {hasRoadmap && (
+        <>
+          <section>
+            <SkillGapPanel refreshKey={refreshKey} />
+          </section>
+          
+          {/* ── Divider ── */}
+          <div className="border-t border-slate-100" />
+        </>
+      )}
 
       {/* ── Section 2: Peta Karir (Roadmap) ── */}
       <section>
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <Map size={18} className="text-emerald-600" />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">Peta Karir</h2>
-            <p className="text-slate-400 text-xs">Progress roadmap belajar dan pencapaian XP-mu</p>
-          </div>
-        </div>
-        <Roadmap />
+        <Roadmap onSkillUpdate={handleSkillUpdate} onGenerate={handleGenerate} onLoad={setHasRoadmap} />
       </section>
 
       {/* ── Divider ── */}
       <div className="border-t border-slate-100" />
 
-      {/* ── Section 3: Skill Gap ── */}
-      <section>
-        <SkillGapPanel />
-      </section>
+      {/* ── Career Results Modal ── */}
+      {isModalOpen && resultData && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white/95 backdrop-blur-md w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-white/20 animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                  <Briefcase size={20} className="text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Rekomendasi Karir AI</h3>
+                  <p className="text-slate-500 text-xs">Pilih jalur karir yang ingin Anda simpan ke roadmap</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-slate-50/50">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {(resultData.careers || (resultData.career ? [resultData.career] : [])).map((careerItem, cIdx) => {
+                  const isSelected = selectedCareerIdx === cIdx;
+                  return (
+                    <div
+                      key={cIdx}
+                      onClick={() => setSelectedCareerIdx(cIdx)}
+                      className={`p-6 rounded-2xl border relative cursor-pointer transition-all duration-300 flex flex-col h-full ${isSelected
+                        ? 'bg-white border-indigo-400 ring-4 ring-indigo-50 shadow-xl'
+                        : 'bg-white/60 border-slate-200 opacity-70 grayscale-[0.3] hover:opacity-100 hover:grayscale-0 hover:border-indigo-200'
+                        }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                          <Check size={16} className="text-white stroke-[3]" />
+                        </div>
+                      )}
+
+                      <span className={`inline-block text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 uppercase tracking-widest ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'
+                        }`}>
+                        {cIdx === 0 ? 'Prioritas' : `Alternatif ${cIdx}`}
+                      </span>
+
+                      <h4 className={`text-xl font-black mb-3 leading-tight ${isSelected ? 'text-indigo-900' : 'text-slate-800'}`}>
+                        {careerItem.name}
+                      </h4>
+
+                      <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">{careerItem.reason}</p>
+
+                      <div className="space-y-4 mt-auto">
+                        <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
+                          <p className="text-[10px] font-bold text-indigo-700 mb-2 uppercase tracking-wider">Skill Kunci</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {(() => {
+                              const skills = new Set();
+                              resultData.roadmap?.forEach(phase => {
+                                phase.steps?.forEach(step => {
+                                  if (Array.isArray(step.skill_tags)) {
+                                    step.skill_tags.forEach(tag => skills.add(tag));
+                                  } else if (typeof step.skill_tags === 'string') {
+                                    try {
+                                      const parsed = JSON.parse(step.skill_tags);
+                                      if (Array.isArray(parsed)) parsed.forEach(t => skills.add(t));
+                                    } catch { skills.add(step.skill_tags); }
+                                  }
+                                });
+                              });
+                              const skillList = Array.from(skills).slice(0, 5);
+                              return skillList.map((skill, si) => (
+                                <span key={si} className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] rounded-md font-bold border border-indigo-200">
+                                  {skill}
+                                </span>
+                              ));
+                            })()}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-2">
+                          <div className="flex items-start gap-2 text-[11px] text-slate-600">
+                            <span className="text-emerald-500 font-bold mt-1">✓</span>
+                            <span>{careerItem.strengths?.[0] || 'Potensi Tinggi'}</span>
+                          </div>
+                          <div className="flex items-start gap-2 text-[11px] text-slate-600">
+                            <span className="text-amber-500 font-bold mt-1">!</span>
+                            <span>{careerItem.weaknesses?.[0] || 'Perlu Belajar'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Preview Bar */}
+              <div className="bg-indigo-900 text-indigo-100 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
+                <div className="flex items-center gap-5">
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl">⚡</div>
+                  <div>
+                    <p className="font-bold text-white">Analisis Karir Siap!</p>
+                    <p className="text-indigo-300 text-xs">AI merekomendasikan <strong>{resultData.roadmap?.length || 0} Fase Roadmap</strong> dan <strong>{resultData.tasks?.length || 0} Tugas</strong> spesifik.</p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 w-full md:w-auto">
+                  <button
+                    onClick={handleGenerate}
+                    disabled={loading || saveLoading}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white px-5 py-2.5 rounded-xl font-medium transition text-sm backdrop-blur-md border border-white/10"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                    Regenerasi
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={saveLoading}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl shadow-xl text-sm font-black transition text-indigo-900 bg-white hover:bg-indigo-50 disabled:opacity-70"
+                  >
+                    {saveLoading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
+                    {saveLoading ? 'Menyimpan...' : 'Simpan Roadmap'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Saved Success Overlay ── */}
+      {saved && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-500">
+          <div className="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-sm animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <Check size={40} className="stroke-[3]" />
+            </div>
+            <h3 className="text-2xl font-black text-slate-800 mb-2">Berhasil!</h3>
+            <p className="text-slate-500 mb-8 leading-relaxed">Roadmap karir Anda telah disimpan. Mari mulai belajar!</p>
+            <div className="space-y-3">
+              <button
+                onClick={() => setSaved(false)}
+                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+              >
+                Lihat Roadmap
+              </button>
+              <button
+                onClick={() => navigate('/todos')}
+                className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition"
+              >
+                Buka Todolist
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

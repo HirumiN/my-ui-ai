@@ -20,7 +20,7 @@ function ProgressBar({ value }) {
   );
 }
 
-export default function SkillGapPanel() {
+export default function SkillGapPanel({ refreshKey }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
@@ -41,7 +41,7 @@ export default function SkillGapPanel() {
     }
   };
 
-  useEffect(() => { fetchGap(); }, []);
+  useEffect(() => { fetchGap(); }, [refreshKey]);
 
   if (loading) return (
     <div className="flex justify-center items-center py-16">
@@ -61,7 +61,7 @@ export default function SkillGapPanel() {
     <div className="text-center py-16 bg-slate-50 rounded-xl border border-dashed border-slate-200">
       <Star size={36} className="mx-auto text-slate-300 mb-3" />
       <p className="text-slate-500 font-medium">Belum ada data skill gap.</p>
-      <p className="text-slate-400 text-sm mt-1">Selesaikan langkah roadmap terlebih dahulu agar XP terakumulasi.</p>
+      <p className="text-slate-400 text-sm mt-1">Lengkapi keterampilan di profil atau buat roadmap karir agar analisa muncul.</p>
     </div>
   );
 
@@ -95,32 +95,31 @@ export default function SkillGapPanel() {
       </div>
 
       {/* Skill List */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {data.skills.map((skill) => (
           <div key={skill.skill} className="bg-white border border-slate-100 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-slate-800">{skill.skill}</span>
-                <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">
-                  Lvl {skill.current_level}
+                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                  {skill.level_name}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className={`font-bold ${skill.gap_pct >= 70 ? 'text-emerald-600' : skill.gap_pct >= 30 ? 'text-yellow-600' : 'text-rose-500'}`}>
-                  {skill.gap_pct}%
+                <span className={`font-bold ${skill.level_name === 'Pemula' ? 'text-slate-500' : 'text-emerald-600'}`}>
+                  {skill.progress_pct}%
                 </span>
-                {skill.gap_pct < 100 && (
-                  <span className="text-slate-400 text-xs flex items-center gap-1">
-                    <AlertCircle size={12} />
-                    {skill.needed_steps} step lagi
+                {skill.progress_pct < 100 && (
+                  <span className="text-slate-400 text-[10px] flex items-center gap-1">
+                    Progress ke {skill.next_level_name}
                   </span>
                 )}
-                {skill.gap_pct >= 100 && (
-                  <span className="text-emerald-600 text-xs font-semibold">✓ Dikuasai</span>
+                {skill.level_name === 'Master' && (
+                  <span className="text-emerald-600 text-xs font-semibold">✓ Maksimal</span>
                 )}
               </div>
             </div>
-            <ProgressBar value={skill.gap_pct} />
+            <ProgressBar value={skill.progress_pct} />
             <p className="text-xs text-slate-400 mt-1.5">{skill.current_xp} XP terkumpul</p>
           </div>
         ))}

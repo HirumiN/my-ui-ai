@@ -75,7 +75,31 @@ export default function Home() {
           <div>
             <p className="text-emerald-300 text-sm font-medium mb-1">{greeting.emoji} {greeting.text}</p>
             <h1 className="text-3xl font-bold mb-1">{user ? user.nama.split(' ')[0] : 'Mahasiswa'} 👋</h1>
-            <p className="text-slate-300 text-sm">{user?.jurusan ? `${user.jurusan} · ` : ''}Platform AI siap membantu hari ini.</p>
+            <p className="text-slate-300 text-sm mb-4">{user?.jurusan ? `${user.jurusan} · ` : ''}Platform AI siap membantu hari ini.</p>
+            
+            {/* Skill Tags */}
+            {user?.keterampilan && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {user.keterampilan.split(', ').map((s, idx) => {
+                  const parts = s.split(' (');
+                  const name = parts[0];
+                  const level = parts[1] ? parts[1].replace(')', '') : null;
+                  return (
+                    <span 
+                      key={idx} 
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-emerald-950 text-[11px] font-bold border border-white/30 shadow-sm"
+                    >
+                      {name}
+                      {level && (
+                        <span className="opacity-60 text-[9px] uppercase tracking-tighter">
+                          • {level}
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
           </div>
           {/* Quick stat pills */}
           <div className="flex flex-wrap gap-2">

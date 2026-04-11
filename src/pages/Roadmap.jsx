@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
 import RoadmapChat, { XPToast } from '../components/RoadmapChat';
-import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star } from 'lucide-react';
+import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
 
-export default function Roadmap() {
+export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
   const { impersonatedUser: user } = useUser();
   const [roadmaps, setRoadmaps] = useState([]);
   const [activeRoadmapId, setActiveRoadmapId] = useState(null);
@@ -14,7 +14,7 @@ export default function Roadmap() {
   const [stepsLoading, setStepsLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [activePopupPhase, setActivePopupPhase] = useState(null);
-  const [showChat, setShowChat] = useState(false);
+  const [showChat, setShowChat] = useState(true);
   const [xpToast, setXpToast] = useState(null);
 
   // Inline edit state
@@ -28,6 +28,7 @@ export default function Roadmap() {
     try {
       const data = await careerService.getRoadmaps();
       setRoadmaps(data);
+      if (onLoad) onLoad(data.length > 0);
       if (data.length > 0) setActiveRoadmapId(data[data.length - 1].id);
     } catch (error) {
       console.error(error);
@@ -73,6 +74,10 @@ export default function Roadmap() {
       setProgressData(prev => prev.map(p =>
         p.id_roadmap_step === step.id ? { ...p, status: 'completed' } : p
       ));
+      
+      // Always trigger skill update to refresh Skill Gap panel (XP/Levels)
+      if (onSkillUpdate) onSkillUpdate();
+      
       if (result.skills_updated?.length > 0) {
         setXpToast(result);
         setTimeout(() => setXpToast(null), 5000);
@@ -145,14 +150,7 @@ export default function Roadmap() {
           <h2 className="text-2xl font-bold text-slate-800">Alur Pembelajaran</h2>
           <p className="text-slate-500 mt-1 text-sm">Centang langkah untuk mendapat XP dan maju menuju target karir.</p>
         </div>
-        {activeRoadmapId && (
-          <button
-            onClick={() => setShowChat(c => !c)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${showChat ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50'}`}
-          >
-            <Star size={16} /> AI Coach
-          </button>
-        )}
+        {/* AI Coach button removed for persistence */}
       </div>
 
       {loading ? (
@@ -162,33 +160,21 @@ export default function Roadmap() {
           <p className="text-rose-600 font-semibold">{fetchError}</p>
         </div>
       ) : roadmaps.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-xl p-12 text-center shadow-sm">
-          <Target className="mx-auto text-slate-300 mb-4" size={48} />
-          <h3 className="text-xl font-bold text-slate-700">Belum Ada Roadmap</h3>
-          <p className="text-slate-500 mt-2 mb-6">Generate dari halaman Karir & Roadmap terlebih dahulu.</p>
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center shadow-sm">
+          <MapPin className="mx-auto text-emerald-400 mb-6" size={48} />
+          <h3 className="text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
+          <p className="text-slate-500 max-w-sm mx-auto mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan buat roadmap otomatis sekarang.</p>
+          <button
+            onClick={onGenerate}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-100 transition-all mx-auto"
+          >
+            Cek Rekomendasi Karir <ArrowRight size={18} />
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0">
-          {/* ── Roadmap Selector ── */}
-          <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm p-4 h-fit">
-            <h3 className="font-bold text-slate-500 mb-4 px-2 uppercase tracking-wider text-xs">Peta Karir</h3>
-            <div className="space-y-2">
-              {roadmaps.map(rm => (
-                <div key={rm.id} className={`w-full text-left p-3 rounded-xl flex items-center justify-between transition-all group ${activeRoadmapId === rm.id ? 'bg-emerald-50 border border-emerald-200' : 'hover:bg-slate-50 border border-transparent'}`}>
-                  <button onClick={() => setActiveRoadmapId(rm.id)} className="flex items-center gap-3 w-full">
-                    <MapPin size={16} className={activeRoadmapId === rm.id ? 'text-emerald-600 shrink-0' : 'text-slate-400 shrink-0'} />
-                    <span className={`font-medium text-xs line-clamp-2 text-left ${activeRoadmapId === rm.id ? 'text-emerald-900' : 'text-slate-700'}`}>{rm.title}</span>
-                  </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDeleteRoadmap(rm.id); }} className="p-1 text-slate-400 opacity-0 group-hover:opacity-100 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all">
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* ── Main: Phase Node Graph ── */}
-          <div className={`${showChat ? 'lg:col-span-7' : 'lg:col-span-10'} transition-all`}>
+          {/* Main: Phase Node Graph (Expanded) */}
+          <div className="lg:col-span-9">
             <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 shadow-sm min-h-[500px] flex justify-center">
               {stepsLoading ? (
                 <div className="flex justify-center p-12"><Clock className="animate-spin text-emerald-400" size={32} /></div>
@@ -220,15 +206,13 @@ export default function Roadmap() {
             </div>
           </div>
 
-          {/* ── AI Chat Panel ── */}
-          {showChat && (
-            <div className="lg:col-span-3 bg-white border border-emerald-100 rounded-2xl shadow-sm p-5 flex flex-col h-[500px]">
-              <RoadmapChat
-                roadmapId={activeRoadmapId}
-                onApplied={() => { fetchDetails(); setShowChat(false); }}
-              />
-            </div>
-          )}
+          {/* ── AI Chat Panel (Persistent) ── */}
+          <div className="lg:col-span-3 bg-white border border-emerald-100 rounded-2xl shadow-sm p-5 flex flex-col h-[600px] sticky top-6">
+            <RoadmapChat
+              roadmapId={activeRoadmapId}
+              onApplied={() => { fetchDetails(); }}
+            />
+          </div>
         </div>
       )}
 
