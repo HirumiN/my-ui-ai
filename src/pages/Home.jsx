@@ -249,7 +249,7 @@ export default function Home() {
           )}
           {roadmaps.slice(0, 3).map(rm => (
             <div key={rm.id} className="flex items-center gap-4 py-2.5 border-b border-slate-50 last:border-0 hover:bg-slate-50 px-1 rounded-lg transition-colors">
-              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 shrink-0 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 shrink-0 flex items-center justify-center">
                 <Briefcase size={14} />
               </div>
               <p className="text-sm font-bold text-slate-800 flex-1 truncate">{rm.title}</p>

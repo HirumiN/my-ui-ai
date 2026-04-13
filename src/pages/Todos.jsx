@@ -134,7 +134,7 @@ export default function Todos() {
 
                     <button
                         onClick={() => activeTab === 'todos' ? setIsAddModalOpen(true) : setIsAddRutModalOpen(true)}
-                        className="px-4 py-2 bg-black text-emerald-950 font-bold rounded-lg hover:bg-gray-800 flex items-center gap-1 transition-all shadow-md"
+                        className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 flex items-center gap-1 transition-all shadow-md"
                         disabled={!impersonatedUser}
                     >
                         <Plus size={18} /> {activeTab === 'todos' ? 'Tambah Task' : 'Tambah Habit'}
@@ -145,7 +145,7 @@ export default function Todos() {
             {/* Tabs Navigation */}
             <div className="flex gap-4 border-b mb-6 mt-4">
                 <button 
-                    className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'todos' ? 'border-b-2 border-black text-black' : 'text-gray-400 hover:text-gray-600'}`}
+                    className={`pb-2 px-1 font-medium transition-colors ${activeTab === 'todos' ? 'border-b-2 border-emerald-600 text-emerald-700' : 'text-gray-400 hover:text-gray-600'}`}
                     onClick={() => setActiveTab('todos')}
                 >
                     <div className="flex items-center gap-2"><CheckSquare size={16} /> Todo List</div>
@@ -183,7 +183,7 @@ export default function Todos() {
                                 <button
                                     key={p}
                                     onClick={() => setFilterPriority(p)}
-                                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filterPriority === p ? 'bg-black text-emerald-950 font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                                    className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${filterPriority === p ? 'bg-emerald-600 text-white font-bold shadow' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                                 >
                                     {p !== 'Semua' && <Flag size={12} />}
                                     {p}

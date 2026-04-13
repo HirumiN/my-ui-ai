@@ -113,8 +113,8 @@ export default function CareerAnalysis() {
       {/* ── Page Header with Action Button ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6 mb-2">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-            <Briefcase size={20} className="text-indigo-600" />
+          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+            <Briefcase size={20} className="text-emerald-600" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Capaian Karir</h1>
@@ -135,7 +135,7 @@ export default function CareerAnalysis() {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md shadow-indigo-100 transition disabled:opacity-60 text-sm"
+            className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md shadow-emerald-100 transition disabled:opacity-60 text-sm"
           >
             {loading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Briefcase size={16} />}
             {loading ? 'AI Menganalisis...' : 'Analisis Karir Baru'}
@@ -176,8 +176,8 @@ export default function CareerAnalysis() {
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
-                  <Briefcase size={20} className="text-indigo-600" />
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
+                  <Briefcase size={20} className="text-emerald-600" />
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-slate-800">Rekomendasi Karir AI</h3>
@@ -202,30 +202,30 @@ export default function CareerAnalysis() {
                       key={cIdx}
                       onClick={() => setSelectedCareerIdx(cIdx)}
                       className={`p-6 rounded-2xl border relative cursor-pointer transition-all duration-300 flex flex-col h-full ${isSelected
-                        ? 'bg-white border-indigo-400 ring-4 ring-indigo-50 shadow-xl'
-                        : 'bg-white/60 border-slate-200 opacity-70 grayscale-[0.3] hover:opacity-100 hover:grayscale-0 hover:border-indigo-200'
+                        ? 'bg-white border-emerald-400 ring-4 ring-emerald-50 shadow-xl'
+                        : 'bg-white/60 border-slate-200 opacity-70 grayscale-[0.3] hover:opacity-100 hover:grayscale-0 hover:border-emerald-200'
                         }`}
                     >
                       {isSelected && (
-                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
+                        <div className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
                           <Check size={16} className="text-white stroke-[3]" />
                         </div>
                       )}
 
-                      <span className={`inline-block text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 uppercase tracking-widest ${isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-500'
+                      <span className={`inline-block text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 uppercase tracking-widest ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-500'
                         }`}>
                         {cIdx === 0 ? 'Prioritas' : `Alternatif ${cIdx}`}
                       </span>
 
-                      <h4 className={`text-xl font-black mb-3 leading-tight ${isSelected ? 'text-indigo-900' : 'text-slate-800'}`}>
+                      <h4 className={`text-xl font-black mb-3 leading-tight ${isSelected ? 'text-emerald-900' : 'text-slate-800'}`}>
                         {careerItem.name}
                       </h4>
 
                       <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">{careerItem.reason}</p>
 
                       <div className="space-y-4 mt-auto">
-                        <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100/50">
-                          <p className="text-[10px] font-bold text-indigo-700 mb-2 uppercase tracking-wider">Skill Kunci</p>
+                        <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50">
+                          <p className="text-[10px] font-bold text-emerald-700 mb-2 uppercase tracking-wider">Skill Kunci</p>
                           <div className="flex flex-wrap gap-1.5">
                             {(() => {
                               const skills = new Set();
@@ -243,7 +243,7 @@ export default function CareerAnalysis() {
                               });
                               const skillList = Array.from(skills).slice(0, 5);
                               return skillList.map((skill, si) => (
-                                <span key={si} className="px-1.5 py-0.5 bg-white text-indigo-600 text-[9px] rounded-md font-bold border border-indigo-200">
+                                <span key={si} className="px-1.5 py-0.5 bg-white text-emerald-600 text-[9px] rounded-md font-bold border border-emerald-200">
                                   {skill}
                                 </span>
                               ));
@@ -268,12 +268,12 @@ export default function CareerAnalysis() {
               </div>
 
               {/* Preview Bar */}
-              <div className="bg-indigo-900 text-indigo-100 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
+              <div className="bg-emerald-900 text-emerald-100 p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6 shadow-lg">
                 <div className="flex items-center gap-5">
                   <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl">⚡</div>
                   <div>
                     <p className="font-bold text-white">Analisis Karir Siap!</p>
-                    <p className="text-indigo-300 text-xs">AI merekomendasikan <strong>{resultData.roadmap?.length || 0} Fase Roadmap</strong> dan <strong>{resultData.tasks?.length || 0} Tugas</strong> spesifik.</p>
+                    <p className="text-emerald-300 text-xs">AI merekomendasikan <strong>{resultData.roadmap?.length || 0} Fase Roadmap</strong> dan <strong>{resultData.tasks?.length || 0} Tugas</strong> spesifik.</p>
                   </div>
                 </div>
 
@@ -289,7 +289,7 @@ export default function CareerAnalysis() {
                   <button
                     onClick={handleSave}
                     disabled={saveLoading}
-                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl shadow-xl text-sm font-black transition text-indigo-900 bg-white hover:bg-indigo-50 disabled:opacity-70"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-8 py-2.5 rounded-xl shadow-xl text-sm font-black transition text-emerald-900 bg-white hover:bg-emerald-50 disabled:opacity-70"
                   >
                     {saveLoading ? <RefreshCw className="animate-spin w-4 h-4" /> : <Save className="w-4 h-4" />}
                     {saveLoading ? 'Menyimpan...' : 'Simpan Roadmap'}
@@ -313,7 +313,7 @@ export default function CareerAnalysis() {
             <div className="space-y-3">
               <button
                 onClick={() => setSaved(false)}
-                className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200"
+                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-200"
               >
                 Lihat Roadmap
               </button>

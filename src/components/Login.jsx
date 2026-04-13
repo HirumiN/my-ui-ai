@@ -13,7 +13,7 @@ const Field = ({ icon: Icon, type = 'text', placeholder, value, onChange, rightS
       onChange={onChange}
       placeholder={placeholder}
       required
-      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-all"
+      className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/40 focus:border-emerald-400 transition-all"
     />
     {rightSlot && (
       <span className="absolute inset-y-0 right-3 flex items-center">{rightSlot}</span>
@@ -68,20 +68,15 @@ export default function Login({ onLogin }) {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-100 via-indigo-50 to-purple-50 px-4">
-      {/* Soft blobs */}
-      <div className="absolute top-[-8%] left-[-5%] w-[500px] h-[500px] bg-indigo-200/50 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-8%] right-[-5%] w-[450px] h-[450px] bg-purple-200/40 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[300px] h-[300px] bg-sky-200/30 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen flex items-center justify-center relative bg-slate-50 px-4">
       <div className="relative z-10 w-full max-w-sm">
         {/* Brand */}
         <div className="flex flex-col items-center mb-7">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200 mb-3">
-            <Sparkles size={20} className="text-white" />
+          <div className="w-12 h-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-100 mb-3 text-white">
+            <Sparkles size={20} />
           </div>
-          <h1 className="text-xl font-bold text-slate-800 tracking-tight">Campus AI</h1>
-          <p className="text-slate-400 text-xs mt-0.5">Platform Akademik & Karir Cerdas</p>
+          <h1 className="text-xl font-bold text-slate-800 tracking-tight text-center">Campus AI</h1>
+          <p className="text-slate-400 text-xs mt-0.5 text-center">Platform Akademik & Karir Cerdas</p>
         </div>
 
         {/* Card */}
@@ -94,7 +89,7 @@ export default function Login({ onLogin }) {
                 type="button"
                 onClick={() => { setTab(key); setError(''); setShowPass(false); }}
                 className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${tab === key
-                  ? 'bg-white text-indigo-600 shadow-sm shadow-slate-200'
+                  ? 'bg-white text-emerald-600 shadow-sm shadow-slate-200'
                   : 'text-slate-400 hover:text-slate-600'}`}
               >
                 {label}
@@ -124,7 +119,7 @@ export default function Login({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold text-sm transition-all shadow-md shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {loading ? <><Loader2 size={15} className="animate-spin" /> Memuat...</> : 'Masuk'}
               </button>
@@ -148,7 +143,7 @@ export default function Login({ onLogin }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-1 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white font-semibold text-sm transition-all shadow-md shadow-indigo-200 flex items-center justify-center gap-2 disabled:opacity-60"
+                className="w-full mt-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm transition-all shadow-md shadow-emerald-100 flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 {loading ? <><Loader2 size={15} className="animate-spin" /> Mendaftar...</> : 'Buat Akun'}
               </button>

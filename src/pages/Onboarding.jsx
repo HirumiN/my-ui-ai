@@ -1,7 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useUser } from '../contexts/UserContext';
 import dataService from '../services/dataService';
-import { ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
+import { 
+  ChevronRight, 
+  ChevronLeft, 
+  CheckCircle, 
+  Search, 
+  Database, 
+  Plus, 
+  Globe, 
+  GraduationCap,
+  Sparkles
+} from 'lucide-react';
 
 const STEPS_CONFIG = [
   {
@@ -15,44 +25,45 @@ const STEPS_CONFIG = [
   },
   {
     field: 'universitas',
-    title: 'Di mana Kampus / Tempat Studi Anda?',
-    subtitle: 'Nama institusi pendidikan saat ini (Hanya pilihan tersedia).',
+    title: 'Di mana Kampus Anda?',
+    subtitle: 'Pilih institusi Anda untuk sinkronisasi kurikulum otomatis.',
     options: [],
-    placeholder: 'Pilih Universitas...',
-    type: 'restricted',
+    placeholder: 'Cari Universitas...',
+    type: 'searchable_select',
     multiSelect: false
   },
   {
     field: 'jurusan',
-    title: 'Apa Jurusan / Program Studi Anda?',
-    subtitle: 'Hanya pilihan tersedia untuk sinkronisasi kurikulum.',
+    title: 'Apa Jurusan Anda?',
+    subtitle: 'Pilih program studi Anda berdasarkan data kurikulum.',
     options: [],
-    placeholder: 'Pilih jurusan Anda...',
-    type: 'restricted',
+    placeholder: 'Cari Jurusan...',
+    type: 'searchable_select',
     multiSelect: false
   },
   {
     field: 'semester_sekarang',
-    title: 'Semester berapa Anda saat ini?',
-    subtitle: 'Penyesuaian rekomendasi tugas dan aktivitas berdasarkan kurikulum.',
-    options: ['1', '2', '3', '4', '5', '6', '7', '8'],
-    placeholder: 'Sebutkan spesifik, contoh: 9',
+    title: 'Semester berapa Anda?',
+    subtitle: 'Maksimal semester 8.',
+    options: [],
+    placeholder: 'Contoh: 1',
     type: 'number',
+    max: 8,
     multiSelect: false
   },
   {
     field: 'target_karir',
     title: 'Apa target karir Anda?',
-    subtitle: 'Rekomendasi kegiatan dan belajar akan disesuaikan untuk ini.',
+    subtitle: 'Rekomendasi karir dan belajar akan disesuaikan.',
     options: ['Software Engineer', 'Data Scientist', 'UI/UX Designer', 'Product Manager'],
-    placeholder: 'Atau ketik sendiri... (contoh: Backend Engineer)',
+    placeholder: 'Atau ketik sendiri...',
     type: 'text',
     multiSelect: false
   },
   {
     field: 'minat',
-    title: 'Apa saja minat atau ketertarikan Anda?',
-    subtitle: 'Pilih satu atau lebih, atau tambahkan sendiri.',
+    title: 'Apa minat Anda?',
+    subtitle: 'Pilih minat Anda atau tambahkan sendiri.',
     options: ['AI & Machine Learning', 'Web Development', 'Desain Grafis', 'Cybersecurity', 'Bisnis & Startup'],
     placeholder: 'Ketik minat lainnya...',
     type: 'text',
@@ -60,8 +71,8 @@ const STEPS_CONFIG = [
   },
   {
     field: 'keterampilan',
-    title: 'Keterampilan (Skill) apa yang Anda miliki saat ini?',
-    subtitle: 'Pilih satu atau lebih, atau tambahkan sendiri.',
+    title: 'Keterampilan apa yang Anda miliki?',
+    subtitle: 'Daftar skill utama Anda saat ini.',
     options: ['Python', 'JavaScript/React', 'Figma', 'Public Speaking', 'Problem Solving'],
     placeholder: 'Sebutkan skill lainnya...',
     type: 'text',
@@ -69,37 +80,10 @@ const STEPS_CONFIG = [
   },
   {
     field: 'tingkat_keterampilan',
-    title: 'Level Mahir (Skill Level)',
-    subtitle: 'Beri tingkatan pada skill yang baru saja Anda pilih.',
+    title: 'Seberapa mahir Anda?',
+    subtitle: 'Beri tingkatan pada skill yang dipilih.',
     options: ['Pemula', 'Menengah', 'Lanjutan'],
     type: 'custom_skill_level',
-    multiSelect: false
-  },
-  {
-    field: 'kepribadian',
-    title: 'Bagaimana Anda mendeskripsikan kepribadian Anda?',
-    subtitle: 'Agar interaksi AI sesuai dengan gaya Anda.',
-    options: ['Introvert', 'Ekstrovert', 'Ambivert', 'Logis & Analitis', 'Kreatif & Imajinatif'],
-    placeholder: 'Atau gambarkan sendiri...',
-    type: 'text',
-    multiSelect: false
-  },
-  {
-    field: 'gaya_belajar',
-    title: 'Bagaimana gaya belajar yang paling cocok untuk Anda?',
-    subtitle: 'Sangat penting untuk rekomendasi belajar Anda.',
-    options: ['Visual (Gambar/Video)', 'Auditori (Mendengar)', 'Kinestetik (Praktek langsung)'],
-    placeholder: 'Atau jelaskan kondisi ideal Anda...',
-    type: 'text',
-    multiSelect: false
-  },
-  {
-    field: 'waktu_luang',
-    title: 'Berapa banyak ketersediaan waktu luang Anda?',
-    subtitle: 'Membantu AI menjadwalkan rekomendasi tanpa membebani jadwal padat Anda.',
-    options: ['1-2 Jam Sehari', 'Hanya Akhir Pekan', 'Waktu Bebas (Full-time)', 'Jarang Ada Waktu'],
-    placeholder: 'Atau ketik sendiri... (contoh: 3 jam tiap malam)',
-    type: 'text',
     multiSelect: false
   }
 ];
@@ -115,17 +99,18 @@ export default function Onboarding({ onComplete }) {
     minat: '',
     keterampilan: '',
     keterampilan_levels: {},
-    kepribadian: '',
-    target_karir: '',
-    gaya_belajar: '',
-    waktu_luang: ''
+    target_karir: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [customInput, setCustomInput] = useState('');
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [extraInput, setExtraInput] = useState('');
   const [campuses, setCampuses] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedCampusId, setSelectedCampusId] = useState(null);
+  const [isCampusManual, setIsCampusManual] = useState(false);
+  const [isDeptManual, setIsDeptManual] = useState(false);
 
   useEffect(() => {
     const fetchCampuses = async () => {
@@ -155,6 +140,14 @@ export default function Onboarding({ onComplete }) {
 
   const activeStepConfig = STEPS_CONFIG[currentStep];
 
+  const filteredOptions = useMemo(() => {
+    if (activeStepConfig.type !== 'searchable_select') return [];
+    const source = activeStepConfig.field === 'universitas' ? campuses : departments;
+    return source.filter(item => 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [activeStepConfig, campuses, departments, searchQuery]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -163,9 +156,7 @@ export default function Onboarding({ onComplete }) {
   const handleOptionClick = (field, option, isMulti) => {
     setFormData(prev => {
       let currentVal = prev[field] || '';
-
       if (isMulti) {
-        // Toggle selection logic for comma separated string
         let parts = currentVal ? currentVal.split(', ').filter(Boolean) : [];
         if (parts.includes(option)) {
           parts = parts.filter(p => p !== option);
@@ -174,21 +165,22 @@ export default function Onboarding({ onComplete }) {
         }
         return { ...prev, [field]: parts.join(', ') };
       } else {
-        // Single selection replace
         return { ...prev, [field]: option };
       }
     });
   };
 
   const handleNext = () => {
-    setCustomInput(''); // Reset custom input between steps
+    setSearchQuery('');
+    setExtraInput('');
     if (currentStep < STEPS_CONFIG.length - 1) {
       setCurrentStep(prev => prev + 1);
     }
   };
 
   const handlePrev = () => {
-    setCustomInput(''); // Reset custom input
+    setSearchQuery('');
+    setExtraInput('');
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -201,7 +193,6 @@ export default function Onboarding({ onComplete }) {
 
     try {
       const data = new URLSearchParams();
-      // Ensure all fields have fallback for impersonatedUser
       data.append('nama', impersonatedUser?.nama || '');
       data.append('email', impersonatedUser?.email || '');
       data.append('telepon', impersonatedUser?.telepon || '');
@@ -214,7 +205,6 @@ export default function Onboarding({ onComplete }) {
       data.append('semester_sekarang', formData.semester_sekarang);
       data.append('minat', formData.minat);
 
-      // Format keterampilan with levels mapping
       let finalKeterampilan = formData.keterampilan;
       if (finalKeterampilan) {
         const skillsArray = finalKeterampilan.split(', ').filter(Boolean);
@@ -225,18 +215,12 @@ export default function Onboarding({ onComplete }) {
         finalKeterampilan = mappedSkills.join(', ');
       }
       data.append('keterampilan', finalKeterampilan);
-
-      data.append('kepribadian', formData.kepribadian);
       data.append('target_karir', formData.target_karir);
-      data.append('gaya_belajar', formData.gaya_belajar);
-      data.append('waktu_luang', formData.waktu_luang);
 
-      if (impersonatedUser && impersonatedUser.id_user) {
+      if (impersonatedUser?.id_user) {
         await dataService.updateUser(impersonatedUser.id_user, data);
       }
-
       onComplete();
-
     } catch (err) {
       console.error(err);
       setError('Gagal menyimpan profil. Silakan coba lagi.');
@@ -246,78 +230,169 @@ export default function Onboarding({ onComplete }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 sm:p-8">
-      <div className="bg-white max-w-6xl w-full shadow-2xl rounded-3xl p-10 md:p-16">
-        {/* Header and Progress indicator */}
-        <div className="mb-12 text-center transition-all">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Halo, {impersonatedUser?.nama || 'User'}!</h1>
-          <p className="text-gray-500 mb-6">Ceritakan tentang Anda agar AI kami bisa bertindak personal.</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-8">
+      <div className="bg-white max-w-5xl w-full shadow-xl shadow-emerald-900/5 rounded-[3rem] p-8 md:p-16 relative overflow-hidden border border-slate-100">
 
-          <div className="flex items-center justify-center space-x-2">
-            {STEPS_CONFIG.map((_, idx) => (
-              <div
-                key={idx}
-                className={`h-2 rounded-full transition-all duration-300 ${currentStep === idx ? 'w-8 bg-blue-600' :
-                  currentStep > idx ? 'w-4 bg-blue-300' : 'w-4 bg-gray-200'
-                  }`}
-              ></div>
-            ))}
+        {/* Progress header */}
+        <div className="relative z-10 mb-12">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                <Sparkles size={20} />
+              </div>
+              <span className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                Step {currentStep + 1} of {STEPS_CONFIG.length}
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              {STEPS_CONFIG.map((_, idx) => (
+                <div key={idx} className={`h-1.5 rounded-full transition-all duration-500 ${
+                  currentStep === idx ? 'w-8 bg-emerald-600' : currentStep > idx ? 'w-4 bg-emerald-300' : 'w-4 bg-gray-100'
+                }`} />
+              ))}
+            </div>
           </div>
+          
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight">
+            {activeStepConfig.title}
+          </h1>
+          <p className="text-gray-500 text-lg mt-3 max-w-2xl">
+            {activeStepConfig.subtitle}
+          </p>
         </div>
 
-        {/* Wizard Form Area */}
-        <div className="min-h-[450px] flex flex-col justify-center transition-opacity duration-300">
-          <div className="mb-8">
-            <h2 className="text-4xl font-semibold text-gray-800 mb-3">
-              Q{currentStep + 1}: {activeStepConfig.title}
-            </h2>
-            <p className="text-gray-500 md:text-lg">{activeStepConfig.subtitle}</p>
-          </div>
+        {/* Form Content */}
+        <div className="relative z-10 min-h-[380px]">
+          {activeStepConfig.type === 'searchable_select' ? (
+            <div className="space-y-6">
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-emerald-500 transition-colors">
+                  <Search size={22} />
+                </div>
+                <input
+                  type="text"
+                  placeholder={activeStepConfig.placeholder}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl pl-14 pr-6 py-5 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-xl text-gray-800 font-medium placeholder:text-gray-400 shadow-sm"
+                />
+              </div>
 
-          <div className="space-y-6">
-            {/* Options grid */}
-            {activeStepConfig.type === 'custom_skill_level' ? (
-              <div className="space-y-4 mt-2">
-                {(!formData.keterampilan || formData.keterampilan.trim() === '') ? (
-                  <p className="text-gray-500 italic p-4 bg-gray-50 rounded-lg text-center border">Anda belum memasukkan skill di tahapan sebelumnya.</p>
-                ) : (
-                  formData.keterampilan.split(', ').filter(Boolean).map((skill, sIdx) => (
-                    <div key={sIdx} className="bg-white border rounded-xl p-4 shadow-sm border-l-4 border-l-blue-500">
-                      <h3 className="font-semibold text-gray-800 mb-3">{skill}</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {activeStepConfig.options.map((lvl, lIdx) => {
-                          const isSel = formData.keterampilan_levels[skill] === lvl;
-                          return (
-                            <button
-                              key={lIdx}
-                              type="button"
-                              onClick={() => {
-                                setFormData(prev => ({
-                                  ...prev,
-                                  keterampilan_levels: {
-                                    ...prev.keterampilan_levels,
-                                    [skill]: lvl
-                                  }
-                                }))
-                              }}
-                              className={`px-4 py-1.5 border rounded-full text-sm font-medium transition-all ${isSel ? 'bg-blue-600 text-white border-blue-600 shadow ring-2 ring-blue-300' : 'bg-gray-50 text-gray-600 hover:bg-blue-50 border-gray-300'}`}
-                            >
-                              {lvl}
-                            </button>
-                          );
-                        })}
+              <div className="grid grid-cols-1 gap-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                {/* Database Options */}
+                {filteredOptions.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      handleOptionClick(activeStepConfig.field, item.name, false);
+                      if (activeStepConfig.field === 'universitas') {
+                        setSelectedCampusId(item.id);
+                        setIsCampusManual(false);
+                      } else {
+                        setIsDeptManual(false);
+                      }
+                      setSearchQuery('');
+                    }}
+                    className={`flex items-center justify-between p-5 rounded-2xl border-2 transition-all ${
+                      formData[activeStepConfig.field] === item.name
+                        ? 'bg-emerald-50 border-emerald-600 shadow-md transform scale-[1.01]'
+                        : 'bg-white border-gray-50 hover:border-emerald-200 hover:shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl ${formData[activeStepConfig.field] === item.name ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                        {activeStepConfig.field === 'universitas' ? <Globe size={20} /> : <GraduationCap size={20} />}
                       </div>
+                      <span className={`text-lg font-semibold ${formData[activeStepConfig.field] === item.name ? 'text-emerald-900' : 'text-gray-700'}`}>
+                        {item.name}
+                      </span>
                     </div>
-                  ))
+                    {formData[activeStepConfig.field] === item.name ? (
+                      <div className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider animate-in fade-in zoom-in duration-300">
+                        <Database size={12} />
+                        Kurikulum Terhubung
+                      </div>
+                    ) : (
+                      <div className="text-gray-300">
+                        <Database size={18} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+
+                {/* Manual Input Fallback */}
+                {searchQuery && !filteredOptions.some(o => o.name.toLowerCase() === searchQuery.toLowerCase()) && (
+                  <button
+                    onClick={() => {
+                      handleOptionClick(activeStepConfig.field, searchQuery, false);
+                      if (activeStepConfig.field === 'universitas') {
+                        setIsCampusManual(true);
+                        setSelectedCampusId(null);
+                        setDepartments([]);
+                      } else {
+                        setIsDeptManual(true);
+                      }
+                      setSearchQuery('');
+                    }}
+                    className="flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed border-gray-200 hover:border-emerald-300 hover:bg-emerald-50/30 transition-all text-gray-500 hover:text-emerald-600 group"
+                  >
+                    <div className="p-3 bg-gray-50 rounded-xl group-hover:bg-emerald-100 transition-colors">
+                      <Plus size={20} />
+                    </div>
+                    <span className="text-lg font-medium italic">Gunakan "{searchQuery}" (Manual)</span>
+                  </button>
                 )}
               </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {/* 1. Predefined/Dynamic options */}
-                {(activeStepConfig.type === 'restricted' 
-                  ? (activeStepConfig.field === 'universitas' ? campuses.map(c => c.name) : departments.map(d => d.name))
-                  : activeStepConfig.options
-                ).map((option, idx) => {
+              
+              {/* Selected Badge for Manual */}
+              {(activeStepConfig.field === 'universitas' ? isCampusManual : isDeptManual) && formData[activeStepConfig.field] && (
+                 <div className="mt-4 p-5 bg-amber-50 rounded-2xl border border-amber-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                       <Plus className="text-amber-500" size={20} />
+                       <span className="font-semibold text-amber-900">{formData[activeStepConfig.field]} (Manual)</span>
+                    </div>
+                    <span className="text-xs font-bold text-amber-600 uppercase">Kurikulum Tidak Terhubung</span>
+                 </div>
+              )}
+            </div>
+          ) : activeStepConfig.type === 'custom_skill_level' ? (
+            <div className="space-y-4">
+              {(!formData.keterampilan || formData.keterampilan.trim() === '') ? (
+                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl p-10 text-center">
+                  <p className="text-gray-400 text-lg">Anda belum menambahkan skill apapun.</p>
+                </div>
+              ) : (
+                formData.keterampilan.split(', ').filter(Boolean).map((skill, sIdx) => (
+                  <div key={sIdx} className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-xl font-bold text-gray-800">{skill}</h3>
+                    <div className="flex gap-2">
+                      {activeStepConfig.options.map((lvl, lIdx) => {
+                        const isSel = formData.keterampilan_levels[skill] === lvl;
+                        return (
+                          <button
+                            key={lIdx}
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              keterampilan_levels: { ...prev.keterampilan_levels, [skill]: lvl }
+                            }))}
+                            className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
+                              isSel ? 'bg-emerald-600 text-white shadow-lg' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
+                            }`}
+                          >
+                            {lvl}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Multi-select or Text/Number */}
+              <div className="flex flex-wrap gap-3">
+                {activeStepConfig.options.map((option, idx) => {
                   const isSelected = activeStepConfig.multiSelect
                     ? (formData[activeStepConfig.field] || '').split(', ').includes(option)
                     : formData[activeStepConfig.field] === option;
@@ -325,120 +400,115 @@ export default function Onboarding({ onComplete }) {
                   return (
                     <button
                       key={idx}
-                      type="button"
-                      onClick={() => {
-                        handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect);
-                        if (activeStepConfig.field === 'universitas') {
-                          const campus = campuses.find(c => c.name === option);
-                          if (campus) setSelectedCampusId(campus.id);
-                        }
-                      }}
-                      className={`px-5 py-3 border rounded-full md:text-base font-medium transition-all duration-200 ${isSelected
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-lg ring-4 ring-blue-200 ring-offset-2 transform scale-105'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:bg-blue-50'
-                        }`}
+                      onClick={() => handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect)}
+                      className={`px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 ${
+                        isSelected 
+                        ? 'bg-emerald-600 text-white shadow-xl shadow-emerald-200 transform scale-105' 
+                        : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-emerald-300 hover:bg-emerald-50/30'
+                      }`}
                     >
                       {option}
                     </button>
                   );
                 })}
               </div>
-            )}
 
-            {/* Manual input fallback - Hide for restricted types */}
-            {activeStepConfig.type !== 'custom_skill_level' && activeStepConfig.type !== 'restricted' && (
-              <div className="pt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Atau Isi Sendiri:</label>
-                {(activeStepConfig.type === 'number' || !activeStepConfig.multiSelect) ? (
+              <div className="space-y-4 pt-4 border-t border-gray-50">
+                <label className="text-sm font-bold text-gray-400 uppercase tracking-wider">Atau ketik sendiri:</label>
+                {!activeStepConfig.multiSelect || activeStepConfig.type === 'number' ? (
                   <input
                     type={activeStepConfig.type}
                     name={activeStepConfig.field}
                     value={formData[activeStepConfig.field]}
                     onChange={handleChange}
+                    min={activeStepConfig.min}
+                    max={activeStepConfig.max}
                     placeholder={activeStepConfig.placeholder}
-                    className="w-full border border-gray-300 rounded-xl px-5 py-4 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800 md:text-lg shadow-inner"
+                    className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl px-6 py-5 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-xl text-gray-800 font-medium shadow-sm"
                   />
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="relative group">
                     <input
                       type="text"
-                      value={customInput}
-                      onChange={(e) => setCustomInput(e.target.value)}
+                      value={extraInput}
+                      onChange={(e) => setExtraInput(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ',') {
                           e.preventDefault();
-                          if (customInput.trim()) {
-                            const currentStr = formData[activeStepConfig.field] || '';
-                            const parts = currentStr ? currentStr.split(', ').filter(Boolean) : [];
-                            if (!parts.includes(customInput.trim())) {
-                              setFormData({ ...formData, [activeStepConfig.field]: [...parts, customInput.trim()].join(', ') });
+                          if (extraInput.trim()) {
+                            const cur = formData[activeStepConfig.field] || '';
+                            const parts = cur ? cur.split(', ').filter(Boolean) : [];
+                            if (!parts.includes(extraInput.trim())) {
+                              setFormData({ ...formData, [activeStepConfig.field]: [...parts, extraInput.trim()].join(', ') });
                             }
-                            setCustomInput('');
+                            setExtraInput('');
                           }
                         }
                       }}
-                      placeholder="Ketik lalu Tambah..."
-                      className="flex-1 w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 transition-all font-medium text-gray-800"
+                      placeholder={activeStepConfig.placeholder}
+                      className="w-full bg-gray-50 border-2 border-gray-100 rounded-2xl pl-6 pr-24 py-5 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-xl text-gray-800 font-medium shadow-sm"
                     />
-                    <button
-                      type="button"
+                    <button 
                       onClick={() => {
-                        if (customInput.trim()) {
-                          const currentStr = formData[activeStepConfig.field] || '';
-                          const parts = currentStr ? currentStr.split(', ').filter(Boolean) : [];
-                          if (!parts.includes(customInput.trim())) {
-                            setFormData({ ...formData, [activeStepConfig.field]: [...parts, customInput.trim()].join(', ') });
+                        if (extraInput.trim()) {
+                          const cur = formData[activeStepConfig.field] || '';
+                          const parts = cur ? cur.split(', ').filter(Boolean) : [];
+                          if (!parts.includes(extraInput.trim())) {
+                            setFormData({ ...formData, [activeStepConfig.field]: [...parts, extraInput.trim()].join(', ') });
                           }
-                          setCustomInput('');
+                          setExtraInput('');
                         }
                       }}
-                      className="px-5 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 border transition-all"
+                      className="absolute right-3 top-3 bottom-3 px-6 bg-emerald-600 text-white rounded-xl font-bold text-sm tracking-wide hover:bg-emerald-700 transition-colors"
                     >
-                      Tambah
+                      TAMBAH
                     </button>
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
         {error && (
-          <div className="mt-6 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg text-sm">
+          <div className="mt-8 p-4 bg-red-50 text-red-600 rounded-2xl border border-red-100 font-semibold text-center animate-shake">
             {error}
           </div>
         )}
 
-        {/* Navigation Buttons */}
-        <div className="flex justify-between items-center mt-10 border-t pt-6">
+        {/* Footer Navigation */}
+        <div className="relative z-10 flex flex-col sm:flex-row justify-between items-center mt-16 pt-8 border-t-2 border-gray-50 gap-4">
           <button
-            type="button"
             onClick={handlePrev}
             disabled={currentStep === 0 || loading}
-            className={`px-6 py-2.5 font-medium rounded-lg flex items-center gap-2 transition-all ${currentStep === 0 ? 'text-gray-400 cursor-not-allowed opacity-50' : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
-              }`}
+            className={`group px-8 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${
+              currentStep === 0 ? 'text-gray-200 cursor-not-allowed' : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'
+            }`}
           >
-            <ChevronLeft size={20} /> Sebelumnya
+            <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" /> 
+            SEBELUMNYA
           </button>
+
+          <div className="flex-1 flex justify-center items-center">
+             <span className="text-gray-300 font-black text-2xl tracking-[0.5em] ml-[0.5em] select-none">
+                CAMPU<span>S</span> AI
+             </span>
+          </div>
 
           {currentStep < STEPS_CONFIG.length - 1 ? (
             <button
-              type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:shadow-lg flex items-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              className="w-full sm:w-auto px-12 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 shadow-xl shadow-emerald-200 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:translate-y-0"
             >
-              Lanjut <ChevronRight size={20} />
+              LANJUT <ChevronRight size={24} />
             </button>
           ) : (
             <button
-              type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-2.5 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 hover:shadow-lg flex items-center gap-2 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto px-12 py-4 bg-emerald-600 text-white font-black rounded-2xl hover:bg-emerald-700 shadow-xl shadow-emerald-200 flex items-center justify-center gap-3 transition-all transform hover:-translate-y-1 active:translate-y-0 disabled:opacity-50"
             >
-              {loading ? 'Menyimpan...' : (
-                <>Selesai & Simpan <CheckCircle size={20} /></>
-              )}
+              {loading ? 'MENYIMPAN...' : <><CheckCircle size={24} /> SELESAI</>}
             </button>
           )}
         </div>

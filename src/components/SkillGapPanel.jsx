@@ -101,7 +101,7 @@ export default function SkillGapPanel({ refreshKey }) {
             <div className="flex justify-between items-center mb-2">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-slate-800">{skill.skill}</span>
-                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">
+                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">
                   {skill.level_name}
                 </span>
               </div>
