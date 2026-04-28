@@ -5,6 +5,8 @@ import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, Trendi
 import { useNavigate } from 'react-router-dom';
 import Roadmap from './Roadmap';
 import SkillGapPanel from '../components/SkillGapPanel';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function CareerAnalysis() {
   const { impersonatedUser: user, checkAuth } = useUser();
@@ -221,7 +223,11 @@ export default function CareerAnalysis() {
                         {careerItem.name}
                       </h4>
 
-                      <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">{careerItem.reason}</p>
+                      <div className="text-slate-600 text-sm leading-relaxed mb-6 flex-1 markdown-content">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {careerItem.reason}
+                        </ReactMarkdown>
+                      </div>
 
                       <div className="space-y-4 mt-auto">
                         <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100/50">

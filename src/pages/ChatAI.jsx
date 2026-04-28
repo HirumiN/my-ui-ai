@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/UserContext';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export default function ChatAI() {
   const { impersonatedUser } = useUser();
@@ -115,17 +117,31 @@ export default function ChatAI() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {messages.map((msg, index) => (
           <div key={msg.id_chat || index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div
-              className={`max-w-xl p-3 rounded-lg shadow-md ${
+              className={`max-w-xl p-4 rounded-2xl shadow-sm ${
                 msg.role === 'user'
-                  ? 'bg-emerald-400 text-emerald-950 font-bold'
-                  : 'bg-gray-200 text-gray-800'
+                  ? 'bg-emerald-600 text-white rounded-tr-none'
+                  : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
               }`}
             >
-              <strong>{msg.role === 'user' ? 'You' : 'AI'}:</strong> {msg.message}
+              <p className={`text-[10px] font-bold uppercase tracking-widest mb-2 ${msg.role === 'user' ? 'text-emerald-200' : 'text-emerald-600'}`}>
+                {msg.role === 'user' ? 'Anda' : 'Asisten AI'}
+              </p>
+              <div className="prose prose-sm max-w-none text-inherit">
+                {msg.role === 'user' ? (
+                   <p className="font-medium">{msg.message}</p>
+                ) : (
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    className="markdown-content"
+                  >
+                    {msg.message}
+                  </ReactMarkdown>
+                )}
+              </div>
             </div>
           </div>
         ))}

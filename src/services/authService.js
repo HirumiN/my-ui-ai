@@ -14,8 +14,8 @@ const login = async (email, password) => {
     return response.data;
 };
 
-const register = async ({ nama, username, email, password }) => {
-    const response = await client.post('/auth/register', { nama, username, email, password });
+const register = async ({ nama, email, password }) => {
+    const response = await client.post('/auth/register', { nama, email, password });
     return response.data;
 };
 

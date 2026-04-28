@@ -33,7 +33,6 @@ export default function Login({ onLogin }) {
 
   // Register
   const [regNama, setRegNama] = useState('');
-  const [regUsername, setRegUsername] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPass, setRegPass] = useState('');
 
@@ -54,7 +53,7 @@ export default function Login({ onLogin }) {
     if (regPass.length < 6) { setError('Password minimal 6 karakter.'); return; }
     setLoading(true);
     try {
-      await authService.register({ nama: regNama, username: regUsername, email: regEmail, password: regPass });
+      await authService.register({ nama: regNama, email: regEmail, password: regPass });
       onLogin();
     } catch (err) {
       setError(err.response?.data?.detail || 'Gagal mendaftar. Coba lagi.');
@@ -130,7 +129,6 @@ export default function Login({ onLogin }) {
           {tab === 'register' && (
             <form onSubmit={handleRegister} className="space-y-3">
               <Field icon={User} placeholder="Nama Lengkap" value={regNama} onChange={e => setRegNama(e.target.value)} />
-              <Field icon={AtSign} placeholder="Username" value={regUsername} onChange={e => setRegUsername(e.target.value)} />
               <Field icon={Mail} type="email" placeholder="Email" value={regEmail} onChange={e => setRegEmail(e.target.value)} />
               <Field
                 icon={Lock}
