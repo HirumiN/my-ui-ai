@@ -72,7 +72,7 @@ export default function SkillGapPanel({ refreshKey }) {
   return (
     <div className="space-y-6">
       {/* Summary Header */}
-      <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex flex-wrap gap-6 items-center">
+      {/* <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex flex-wrap gap-6 items-center">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
             <TrendingUp size={22} className="text-emerald-600" />
@@ -92,7 +92,7 @@ export default function SkillGapPanel({ refreshKey }) {
             <p className="text-xs text-slate-500">Skill dikuasai</p>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Skill List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

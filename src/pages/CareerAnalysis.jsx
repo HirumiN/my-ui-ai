@@ -7,6 +7,7 @@ import Roadmap from './Roadmap';
 import SkillGapPanel from '../components/SkillGapPanel';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { sendNotification } from '../services/notificationService';
 
 export default function CareerAnalysis() {
   const { impersonatedUser: user, checkAuth } = useUser();
@@ -68,6 +69,9 @@ export default function CareerAnalysis() {
       const res = await careerService.generateAnalysis(user.id_user);
       setResultData(res.data);
       setIsModalOpen(true);
+      sendNotification("Analisis Selesai ⚡", {
+        body: "AI telah selesai membuat rekomendasi karir dan roadmap Anda."
+      });
     } catch (err) {
       console.error(err);
       setError(err.response?.status === 401
@@ -157,7 +161,7 @@ export default function CareerAnalysis() {
           <section>
             <SkillGapPanel refreshKey={refreshKey} />
           </section>
-          
+
           {/* ── Divider ── */}
           <div className="border-t border-slate-100" />
         </>
@@ -174,7 +178,7 @@ export default function CareerAnalysis() {
       {/* ── Career Results Modal ── */}
       {isModalOpen && resultData && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white/95 backdrop-blur-md w-full max-w-5xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-white/20 animate-in zoom-in-95 duration-300">
+          <div className="bg-white/95 backdrop-blur-md w-full max-w-7xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-white/20 animate-in zoom-in-95 duration-300">
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
               <div className="flex items-center gap-3">
@@ -247,12 +251,22 @@ export default function CareerAnalysis() {
                                   }
                                 });
                               });
-                              const skillList = Array.from(skills).slice(0, 5);
-                              return skillList.map((skill, si) => (
-                                <span key={si} className="px-1.5 py-0.5 bg-white text-emerald-600 text-[9px] rounded-md font-bold border border-emerald-200">
-                                  {skill}
-                                </span>
-                              ));
+                              const allSkills = Array.from(skills);
+                              const skillList = allSkills.slice(0, 6);
+                              return (
+                                <>
+                                  {skillList.map((skill, si) => (
+                                    <span key={si} className="px-1.5 py-0.5 bg-white text-emerald-600 text-[9px] rounded-md font-bold border border-emerald-200">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                  {allSkills.length > 6 && (
+                                    <span className="px-1.5 py-0.5 bg-slate-100 text-slate-500 text-[9px] rounded-md font-bold border border-slate-200">
+                                      +{allSkills.length - 6} lainnya
+                                    </span>
+                                  )}
+                                </>
+                              );
                             })()}
                           </div>
                         </div>

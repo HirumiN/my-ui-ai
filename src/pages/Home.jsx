@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import {
   CheckSquare, MessageSquare, Briefcase, GraduationCap,
   Repeat, Clock, ArrowRight, CheckCircle2, BookOpen, Map,
-  Calendar, AlertCircle, Sparkles, RefreshCw, User
+  Calendar, AlertCircle, Sparkles, RefreshCw, User, Bell, BellRing
 } from 'lucide-react';
 import dataService from '../services/dataService';
 import careerService from '../services/careerService';
+import { requestNotificationPermission, sendNotification } from '../services/notificationService';
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -38,6 +39,9 @@ export default function Home() {
   const [progress, setProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [notifEnabled, setNotifEnabled] = useState(
+    "Notification" in window && Notification.permission === "granted"
+  );
 
   const handleSync = async () => {
     setSyncing(true);
@@ -52,6 +56,18 @@ export default function Home() {
       alert("Gagal sinkronisasi profil.");
     } finally {
       setSyncing(false);
+    }
+  };
+
+  const handleEnableNotif = async () => {
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      setNotifEnabled(true);
+      sendNotification("Notifikasi Aktif!", {
+        body: "Anda akan menerima pengingat dan pembaruan AI di perangkat ini."
+      });
+    } else {
+      alert("Izin notifikasi ditolak atau tidak didukung di browser ini.");
     }
   };
 
@@ -121,6 +137,16 @@ export default function Home() {
                 {syncing ? <RefreshCw size={16} className="animate-spin" /> : <Repeat size={16} />}
                 Sinkronisasi Skill
               </button>
+
+              {!notifEnabled && (
+                <button 
+                  onClick={handleEnableNotif}
+                  className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 px-5 py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95 border border-blue-200"
+                >
+                  <Bell size={16} />
+                  Aktifkan Notifikasi
+                </button>
+              )}
             </div>
           </div>
 

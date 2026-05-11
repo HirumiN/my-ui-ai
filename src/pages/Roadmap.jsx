@@ -3,6 +3,7 @@ import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
 import RoadmapChat, { XPToast } from '../components/RoadmapChat';
 import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
+import { sendNotification } from '../services/notificationService';
 
 export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
   const { impersonatedUser: user, checkAuth } = useUser();
@@ -74,13 +75,20 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
       setProgressData(prev => prev.map(p =>
         p.id_roadmap_step === step.id ? { ...p, status: 'completed' } : p
       ));
-      
+
       // Always trigger skill update to refresh Skill Gap panel (XP/Levels)
       if (onSkillUpdate) onSkillUpdate();
-      
+
       if (result.skills_updated?.length > 0) {
         setXpToast(result);
         setTimeout(() => setXpToast(null), 5000);
+        sendNotification("Langkah Selesai! 🎉", {
+          body: `Anda mendapatkan XP dan skill baru. Teruskan belajarnya!`
+        });
+      } else {
+        sendNotification("Langkah Selesai!", {
+          body: `Selamat! Anda selangkah lebih dekat dengan target karir Anda.`
+        });
       }
       if (result.profile_updated && checkAuth) {
         await checkAuth();
@@ -291,14 +299,18 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
                                 {step.description}
                               </p>
                             )}
-                            {/* Skill Tags */}
                             {skillList.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mb-2">
-                                {skillList.map(skill => (
+                                {skillList.slice(0, 3).map(skill => (
                                   <span key={skill} className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
                                     {skill}
                                   </span>
                                 ))}
+                                {skillList.length > 3 && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">
+                                    +{skillList.length - 3} lainnya
+                                  </span>
+                                )}
                               </div>
                             )}
                             <div className="flex items-center gap-1 text-xs text-slate-400">
