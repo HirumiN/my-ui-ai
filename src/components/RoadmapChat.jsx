@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import careerService from '../services/careerService';
 import { Sparkles, Send, CheckCircle, Plus, Pencil, Trash2, RefreshCw, Check, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // ── XP Toast ────────────────────────────────────────────────────
 export function XPToast({ data, onClose }) {
@@ -95,12 +97,11 @@ export default function RoadmapChat({ roadmapId, onApplied }) {
       {preview && (
         <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-1 custom-scrollbar">
           <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 text-sm text-emerald-800">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]}
-              className="prose prose-sm max-w-none text-emerald-800 markdown-content"
-            >
-              {preview.ai_message}
-            </ReactMarkdown>
+            <div className="prose prose-sm max-w-none text-emerald-800 markdown-content">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {preview.ai_message}
+              </ReactMarkdown>
+            </div>
           </div>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Perubahan yang diusulkan:</p>
           {preview.proposed_changes.filter(c => c.action !== 'keep').map((change, i) => {

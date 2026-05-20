@@ -28,7 +28,7 @@ export default function Login({ onLogin }) {
   const [error, setError] = useState('');
 
   // Login
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPass, setLoginPass] = useState('');
 
   // Register
@@ -40,7 +40,7 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     setError(''); setLoading(true);
     try {
-      await authService.login(loginEmail, loginPass);
+      await authService.login(loginIdentifier, loginPass);
       onLogin();
     } catch (err) {
       setError(err.response?.data?.detail || 'Email atau password salah.');
@@ -106,7 +106,7 @@ export default function Login({ onLogin }) {
           {/* Login Form */}
           {tab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-3">
-              <Field icon={Mail} type="email" placeholder="Email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} />
+              <Field icon={User} type="text" placeholder="Username/Email" value={loginIdentifier} onChange={e => setLoginIdentifier(e.target.value)} />
               <Field
                 icon={Lock}
                 type={showPass ? 'text' : 'password'}
