@@ -158,8 +158,8 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
       {/* ── Header ── */}
       <div className="mb-6 flex justify-between items-center border-b border-slate-100 pb-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Alur Pembelajaran</h2>
-          <p className="text-slate-500 mt-1 text-sm">Centang langkah untuk mendapat XP dan maju menuju target karir.</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Alur Pembelajaran</h2>
+          <p className="text-slate-500 mt-1 text-xs sm:text-sm">Centang langkah untuk mendapat XP dan maju menuju target karir.</p>
         </div>
         {/* AI Coach button removed for persistence */}
       </div>
@@ -171,22 +171,22 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           <p className="text-rose-600 font-semibold">{fetchError}</p>
         </div>
       ) : roadmaps.length === 0 ? (
-        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center shadow-sm">
-          <MapPin className="mx-auto text-emerald-400 mb-6" size={48} />
-          <h3 className="text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan buat roadmap otomatis sekarang.</p>
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-6 sm:p-12 text-center shadow-sm">
+          <MapPin className="mx-auto text-emerald-400 mb-4 sm:mb-6" size={40} className="sm:w-12 sm:h-12" />
+          <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
+          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan buat roadmap otomatis sekarang.</p>
           <button
             onClick={onGenerate}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-emerald-100 transition-all mx-auto"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-emerald-100 transition-all mx-auto text-sm sm:text-base"
           >
-            Cek Rekomendasi Karir <ArrowRight size={18} />
+            Cek Rekomendasi Karir <ArrowRight size={16} />
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0">
           {/* Main: Phase Node Graph (Expanded) */}
           <div className="lg:col-span-9">
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-8 shadow-sm min-h-[500px] flex justify-center">
+            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-8 shadow-sm min-h-[350px] sm:min-h-[500px] flex justify-center">
               {stepsLoading ? (
                 <div className="flex justify-center p-12"><Clock className="animate-spin text-emerald-400" size={32} /></div>
               ) : (
@@ -199,15 +199,15 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
                     return (
                       <div key={phase} className="relative flex justify-center w-full mb-10">
                         {index !== Object.entries(stepsByPhase).length - 1 && (
-                          <div className="absolute top-[4.5rem] h-10 w-1.5 bg-emerald-100 z-0" />
+                          <div className="absolute top-[3.5rem] h-12 w-1 bg-emerald-100 z-0" />
                         )}
                         <button
                           onClick={() => setActivePopupPhase(phase)}
-                          className={`w-72 sm:w-80 py-4 px-6 rounded-2xl font-bold shadow-md text-center transition-all hover:scale-105 border-4 z-10 ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-emerald-300 text-slate-800 hover:border-emerald-500'}`}
+                          className={`w-full max-w-[280px] sm:max-w-[320px] py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl font-bold shadow-sm text-center transition-all hover:scale-[1.02] border-2 sm:border-4 z-10 ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-emerald-300 text-slate-800 hover:border-emerald-500'}`}
                         >
-                          <div className="text-[10px] uppercase font-black tracking-widest mb-1 opacity-60">Fase {index + 1}</div>
-                          {phase}
-                          {isCompleted && <span className="ml-2 inline-block text-emerald-500">✓</span>}
+                          <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest mb-0.5 sm:mb-1 opacity-60">Fase {index + 1}</div>
+                          <span className="text-xs sm:text-base">{phase}</span>
+                          {isCompleted && <span className="ml-1.5 inline-block text-emerald-500 font-bold">✓</span>}
                         </button>
                       </div>
                     );
@@ -218,7 +218,7 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           </div>
 
           {/* ── AI Chat Panel (Persistent) ── */}
-          <div className="lg:col-span-3 bg-white border border-emerald-100 rounded-2xl shadow-sm p-5 flex flex-col h-[600px] sticky top-6">
+          <div className="lg:col-span-3 bg-white border border-emerald-100 rounded-2xl shadow-sm p-4 sm:p-5 flex flex-col h-[400px] sm:h-[500px] lg:h-[600px] relative lg:sticky lg:top-6">
             <RoadmapChat
               roadmapId={activeRoadmapId}
               onApplied={() => { fetchDetails(); }}
@@ -233,20 +233,20 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
       )}
 
       {/* ── Drawer: Step Detail + Inline Edit ── */}
-      <div className={`fixed inset-y-0 right-0 w-full sm:w-[500px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col ${activePopupPhase ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed inset-y-0 right-0 w-full sm:w-[450px] md:w-[500px] bg-white shadow-2xl z-50 transform transition-transform duration-300 flex flex-col ${activePopupPhase ? 'translate-x-0' : 'translate-x-full'}`}>
         {activePopupPhase && (
           <>
-            <div className="p-6 border-b bg-emerald-50 flex justify-between items-center">
+            <div className="p-4 sm:p-6 border-b bg-emerald-50 flex justify-between items-center">
               <div>
                 <div className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider mb-1">Rincian Fase</div>
-                <h3 className="font-bold text-xl text-emerald-900 pr-4">{activePopupPhase}</h3>
+                <h3 className="font-bold text-lg sm:text-xl text-emerald-900 pr-4">{activePopupPhase}</h3>
               </div>
               <button onClick={() => setActivePopupPhase(null)} className="p-2 bg-white rounded-full text-slate-400 hover:text-rose-500 shadow-sm border border-slate-100">
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto flex-1 bg-slate-50 space-y-4">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 bg-slate-50 space-y-4">
               {stepsByPhase[activePopupPhase]?.map(step => {
                 const progress = progressData.find(p => p.id_roadmap_step === step.id);
                 const isDone = progress?.status === 'completed';
@@ -255,12 +255,12 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
                 try { skillList = JSON.parse(step.skill_tags || '[]'); } catch { skillList = []; }
 
                 return (
-                  <div key={step.id} className={`bg-white border rounded-xl p-5 shadow-sm transition-all ${isDone ? 'border-emerald-200 bg-emerald-50/30 opacity-80' : 'border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}>
+                  <div key={step.id} className={`bg-white border rounded-xl p-4 sm:p-5 shadow-sm transition-all ${isDone ? 'border-emerald-200 bg-emerald-50/30 opacity-80' : 'border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}>
                     <div className="flex gap-3">
                       {/* Complete button */}
                       <button onClick={() => completeStep(step, progress)} className="mt-1 shrink-0 focus:outline-none transition-transform hover:scale-110">
                         {isDone
-                          ? <CheckCircle className="text-emerald-500" size={22} />
+                          ? <CheckCircle className="text-emerald-500" size={20} />
                           : <div className="w-5 h-5 rounded-full border-2 border-slate-300 hover:border-emerald-400 bg-white" />
                         }
                       </button>
@@ -291,29 +291,29 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
                           </div>
                         ) : (
                           <>
-                            <h5 className={`font-bold text-base mb-1.5 leading-snug ${isDone ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
+                            <h5 className={`font-bold text-sm sm:text-base mb-1.5 leading-snug ${isDone ? 'text-slate-400 line-through' : 'text-slate-800'}`}>
                               {step.title}
                             </h5>
                             {step.description && (
-                              <p className={`text-sm leading-relaxed mb-2 ${isDone ? 'text-slate-400' : 'text-slate-600'}`}>
+                              <p className={`text-xs sm:text-sm leading-relaxed mb-2 ${isDone ? 'text-slate-400' : 'text-slate-600'}`}>
                                 {step.description}
                               </p>
                             )}
                             {skillList.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mb-2">
                                 {skillList.slice(0, 3).map(skill => (
-                                  <span key={skill} className="text-[10px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
+                                  <span key={skill} className="text-[9px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full">
                                     {skill}
                                   </span>
                                 ))}
                                 {skillList.length > 3 && (
-                                  <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">
+                                  <span className="text-[9px] font-bold px-2 py-0.5 bg-slate-100 text-slate-500 rounded-full">
                                     +{skillList.length - 3} lainnya
                                   </span>
                                 )}
                               </div>
                             )}
-                            <div className="flex items-center gap-1 text-xs text-slate-400">
+                            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-slate-400">
                               <Star size={10} /> +{step.xp_reward || 10} XP saat selesai
                             </div>
                           </>
