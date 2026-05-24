@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
+import client from '../api/client';
 
 const UKM = () => {
   const [ukmList, setUkmList] = useState([]);
@@ -25,14 +26,8 @@ const UKM = () => {
     setLoading(true);
     setError(null);
     try {
-      const url = `http://localhost:8000/ukm?id_user=${impersonatedUser.id_user}`;
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setUkmList(data);
+      const response = await client.get(`/ukm?id_user=${impersonatedUser.id_user}`);
+      setUkmList(response.data);
     } catch (error) {
       setError(error);
     } finally {
@@ -73,17 +68,11 @@ const UKM = () => {
       }
       formData.set('id_user', impersonatedUser.id_user); // Ensure id_user is set from impersonated user
 
-      const response = await fetch('http://localhost:8000/add-ukm', {
-        method: 'POST',
+      await client.post('/add-ukm', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData.toString(),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       setNewUkm({
         nama: '',
@@ -106,18 +95,13 @@ const UKM = () => {
         return;
     }
     try {
-      const response = await fetch(`http://localhost:8000/delete-ukm/${ukmId}`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      await client.post(`/delete-ukm/${ukmId}`);
       await fetchUkmList(); // Refresh UKM list
     } catch (error) {
       setDeleteUkmError(error.message);
     }
   };
+
 
   if (!impersonatedUser) {
     return (
