@@ -55,7 +55,7 @@ const STEPS_CONFIG = [
     field: 'target_karir',
     title: 'Apa target karir Anda?',
     subtitle: 'Rekomendasi karir dan belajar akan disesuaikan.',
-    options: ['Software Engineer', 'Data Scientist', 'UI/UX Designer', 'Product Manager'],
+    options: ['Pebisnis / Wirausaha', 'Desainer / Kreator Konten', 'Manajer / Eksekutif', 'Akademisi / Peneliti', 'Spesialis Teknologi'],
     placeholder: 'Atau ketik sendiri...',
     type: 'text',
     multiSelect: false
@@ -64,7 +64,7 @@ const STEPS_CONFIG = [
     field: 'minat',
     title: 'Apa minat Anda?',
     subtitle: 'Pilih minat Anda atau tambahkan sendiri.',
-    options: ['AI & Machine Learning', 'Web Development', 'Desain Grafis', 'Cybersecurity', 'Bisnis & Startup'],
+    options: ['Teknologi & Inovasi', 'Seni & Industri Kreatif', 'Bisnis & Pengembangan Diri', 'Sosial, Komunikasi & Bahasa', 'Sains, Riset & Lingkungan'],
     placeholder: 'Ketik minat lainnya...',
     type: 'text',
     multiSelect: true
@@ -73,7 +73,7 @@ const STEPS_CONFIG = [
     field: 'keterampilan',
     title: 'Keterampilan apa yang Anda miliki?',
     subtitle: 'Daftar skill utama Anda saat ini.',
-    options: ['Python', 'JavaScript/React', 'Figma', 'Public Speaking', 'Problem Solving'],
+    options: ['Komunikasi & Public Speaking', 'Manajemen Waktu & Organisasi', 'Desain Kreatif & Multimedia', 'Analisis Data & Riset', 'Pemikiran Kritis & Problem Solving'],
     placeholder: 'Sebutkan skill lainnya...',
     type: 'text',
     multiSelect: true

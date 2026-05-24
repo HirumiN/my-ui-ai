@@ -140,7 +140,7 @@ export default function RoadmapChat({ roadmapId, onApplied }) {
         <div className="flex-1 flex flex-col justify-end">
           <div className="space-y-2 mb-3 text-xs text-slate-400">
             <p className="font-medium text-slate-500 text-xs mb-2">Contoh pesan:</p>
-            {['Fokuskan ke backend dulu', 'Aku lebih suka data daripada ML', 'Tambahkan step untuk DevOps'].map(ex => (
+            {['Fokuskan ke kemampuan manajemen dan kepemimpinan dulu', 'Saya lebih tertarik pada bidang kreatif dan desain', 'Tambahkan langkah untuk mempersiapkan magang/industri'].map(ex => (
               <button key={ex} onClick={() => setMessage(ex)} className="block w-full text-left px-3 py-1.5 bg-slate-50 rounded-lg hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
                 "{ex}"
               </button>

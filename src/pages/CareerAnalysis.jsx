@@ -10,11 +10,19 @@ import remarkGfm from 'remark-gfm';
 import { sendNotification } from '../services/notificationService';
 
 export default function CareerAnalysis() {
-  const { impersonatedUser: user, checkAuth } = useUser();
+  const { 
+    impersonatedUser: user, 
+    checkAuth,
+    careerResult: resultData,
+    setCareerResult: setResultData,
+    careerLoading: loading,
+    careerError: error,
+    isCareerModalOpen: isModalOpen,
+    setIsCareerModalOpen: setIsModalOpen,
+    generateCareerAnalysisGlobal
+  } = useUser();
   const navigate = useNavigate();
-  const CACHE_KEY = user ? `career_analysis_draft_${user.id_user}` : null;
 
-  const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
@@ -32,54 +40,20 @@ export default function CareerAnalysis() {
       setSyncing(false);
     }
   };
-  const [resultData, setResultData] = useState(() => {
-    if (!CACHE_KEY) return null;
-    try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      return cached ? JSON.parse(cached) : null;
-    } catch { return null; }
-  });
+
   const [saveLoading, setSaveLoading] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedCareerIdx, setSelectedCareerIdx] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasRoadmap, setHasRoadmap] = useState(true); // Default to true to avoid flicker if needed, but Roadmap will update it
 
   const handleSkillUpdate = () => setRefreshKey(prev => prev + 1);
 
-  useEffect(() => {
-    if (!CACHE_KEY) return;
-    if (resultData) {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(resultData));
-    } else {
-      localStorage.removeItem(CACHE_KEY);
-    }
-  }, [resultData, CACHE_KEY]);
-
   const handleGenerate = async () => {
     if (!user) return;
-    setLoading(true);
-    setResultData(null);
     setSaved(false);
-    setError(null);
     setSelectedCareerIdx(0);
-    try {
-      const res = await careerService.generateAnalysis(user.id_user);
-      setResultData(res.data);
-      setIsModalOpen(true);
-      sendNotification("Analisis Selesai ⚡", {
-        body: "AI telah selesai membuat rekomendasi karir dan roadmap Anda."
-      });
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.status === 401
-        ? 'Sesi tidak valid. Silakan login ulang.'
-        : 'Gagal menghasilkan rekomendasi karir. AI mungkin sedang sibuk.');
-    } finally {
-      setLoading(false);
-    }
+    await generateCareerAnalysisGlobal();
   };
 
   const handleSave = async () => {
@@ -92,7 +66,7 @@ export default function CareerAnalysis() {
       const chosenCareer = resultData.careers ? resultData.careers[selectedCareerIdx] : resultData.career;
       const finalData = { ...resultData, careers: [chosenCareer] };
       await careerService.saveAnalysis(user.id_user, finalData);
-      if (CACHE_KEY) localStorage.removeItem(CACHE_KEY);
+      setResultData(null); // Clear context result data after save
       setSaved(true);
       setIsModalOpen(false);
       handleSkillUpdate(); // Refresh skill gap after save
