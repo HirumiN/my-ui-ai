@@ -172,7 +172,7 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
         </div>
       ) : roadmaps.length === 0 ? (
         <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-6 sm:p-12 text-center shadow-sm">
-          <MapPin className="mx-auto text-emerald-400 mb-4 sm:mb-6" size={40} className="sm:w-12 sm:h-12" />
+          <MapPin className="mx-auto text-emerald-400 mb-4 sm:mb-6 sm:w-12 sm:h-12" size={40} />
           <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
           <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan buat roadmap otomatis sekarang.</p>
           <button
