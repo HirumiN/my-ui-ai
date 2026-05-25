@@ -45,6 +45,7 @@ export default function CareerAnalysis() {
   const [saved, setSaved] = useState(false);
   const [selectedCareerIdx, setSelectedCareerIdx] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [roadmapKey, setRoadmapKey] = useState(0);
   const [hasRoadmap, setHasRoadmap] = useState(true); // Default to true to avoid flicker if needed, but Roadmap will update it
 
   const handleSkillUpdate = () => setRefreshKey(prev => prev + 1);
@@ -70,6 +71,7 @@ export default function CareerAnalysis() {
       setSaved(true);
       setIsModalOpen(false);
       handleSkillUpdate(); // Refresh skill gap after save
+      setRoadmapKey(prev => prev + 1); // Refresh roadmap list & details immediately
     } catch (err) {
       console.error(err);
       alert('Gagal menyimpan hasil karir: ' + (err.response?.data?.detail || err.message));
@@ -143,7 +145,7 @@ export default function CareerAnalysis() {
 
       {/* ── Section 2: Peta Karir (Roadmap) ── */}
       <section>
-        <Roadmap onSkillUpdate={handleSkillUpdate} onGenerate={handleGenerate} onLoad={setHasRoadmap} />
+        <Roadmap key={roadmapKey} onSkillUpdate={handleSkillUpdate} onGenerate={handleGenerate} onLoad={setHasRoadmap} />
       </section>
 
       {/* ── Divider ── */}
