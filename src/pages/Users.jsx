@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import { Edit, Trash2 } from 'lucide-react'; // Import Edit and Trash2 icons
+import client from '../api/client';
 
 // Edit User Modal Component
 const EditUserModal = ({ isOpen, onClose, onUpdateUser, user }) => {
@@ -143,11 +144,8 @@ const Users = () => {
 
   const fetchUsers = useCallback(async () => {
     try {
-      const response = await fetch('http://localhost:8000/users'); // Assuming this endpoint exists
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const response = await client.get('/users');
+      const data = response.data;
       setUsers(data);
     } catch (error) {
       setError(error);
@@ -187,17 +185,11 @@ const Users = () => {
         }
       }
 
-      const response = await fetch('http://localhost:8000/add-user', {
-        method: 'POST',
+      await client.post('/add-user', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData.toString(),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       setNewUser({
         nama: '',
@@ -223,17 +215,12 @@ const Users = () => {
         }
       }
 
-      const response = await fetch(`http://localhost:8000/update-user/${updatedUserData.id_user}`, {
-        method: 'POST',
+      await client.post(`/update-user/${updatedUserData.id_user}`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData.toString(),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
       await fetchUsers(); // Refresh user list
       // If the updated user is the currently impersonated user, update the context
       if (impersonatedUser && impersonatedUser.id_user === updatedUserData.id_user) {
@@ -248,13 +235,7 @@ const Users = () => {
   const handleDeleteUser = async (userId) => {
     setDeleteUserError(null);
     try {
-      const response = await fetch(`http://localhost:8000/delete-user/${userId}`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      await client.post(`/delete-user/${userId}`);
       await fetchUsers(); // Refresh user list
     } catch (error) {
       setDeleteUserError(error.message);

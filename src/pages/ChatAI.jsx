@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../contexts/UserContext';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import client from '../api/client';
 
 export default function ChatAI() {
   const { impersonatedUser } = useUser();
@@ -20,18 +21,8 @@ export default function ChatAI() {
     setLoadingHistory(true);
     setHistoryError(null);
     try {
-      const response = await fetch(`http://localhost:8000/chat-history/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const chatHistory = await response.json();
+      const response = await client.get(`/chat-history/${userId}`);
+      const chatHistory = response.data;
       setMessages(chatHistory.map(msg => ({ role: msg.role, message: msg.message })));
     } catch (error) {
       console.error('Error fetching chat history:', error);
@@ -77,24 +68,14 @@ export default function ChatAI() {
     const clientLocalTime = new Date().toISOString(); // ISO 8601 format
 
     try {
-      const response = await fetch('http://localhost:8000/rag/query', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id_user: impersonatedUser.id_user,
-          question: userQuestion,
-          top_k: 5,
-          client_local_time: clientLocalTime,
-        }),
+      const response = await client.post('/rag/query', {
+        id_user: impersonatedUser.id_user,
+        question: userQuestion,
+        top_k: 5,
+        client_local_time: clientLocalTime,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = response.data;
       setMessages((prevMessages) => [...prevMessages, { role: 'assistant', message: data.answer }]);
     } catch (error) {
       console.error('Error fetching RAG query:', error);

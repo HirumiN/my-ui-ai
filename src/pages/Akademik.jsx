@@ -5,6 +5,7 @@ import { AddSemesterModal, EditSemesterModal } from '../components/SemesterModal
 import { AddJadwalModal, EditJadwalModal } from '../components/JadwalModals';
 import CurriculumModal from '../components/CurriculumModal';
 import { Plus, Edit, Trash2, BookOpen, Calendar, Users, RefreshCw, Link as LinkIcon } from 'lucide-react';
+import client from '../api/client';
 
 const TABS = [
     { key: 'jadwal', label: 'Jadwal Kuliah', icon: BookOpen },
@@ -150,8 +151,8 @@ function UKMSection({ impersonatedUser }) {
         if (!impersonatedUser) { setLoading(false); return; }
         setLoading(true);
         try {
-            const res = await fetch(`http://localhost:8000/ukm?id_user=${impersonatedUser.id_user}`);
-            setUkmList(await res.json());
+            const res = await client.get(`/ukm?id_user=${impersonatedUser.id_user}`);
+            setUkmList(res.data);
         } catch (e) { setError(e.message); }
         finally { setLoading(false); }
     }, [impersonatedUser]);
@@ -164,8 +165,7 @@ function UKMSection({ impersonatedUser }) {
         setAddingUkm(true); setAddError(null);
         try {
             const fd = new URLSearchParams({ ...newUkm, id_user: impersonatedUser.id_user });
-            const res = await fetch('http://localhost:8000/add-ukm', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: fd.toString() });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            await client.post('/add-ukm', fd, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
             setNewUkm({ nama: '', jabatan: '', deskripsi: '' });
             fetch_();
         } catch (e) { setAddError(e.message); }
@@ -173,7 +173,7 @@ function UKMSection({ impersonatedUser }) {
     };
 
     const handleDelete = async (id) => {
-        await fetch(`http://localhost:8000/delete-ukm/${id}`, { method: 'POST' });
+        await client.post(`/delete-ukm/${id}`);
         fetch_();
     };
 
