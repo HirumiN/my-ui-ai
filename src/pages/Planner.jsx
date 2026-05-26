@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import dataService from '../services/dataService';
 import AIQuickAdd from '../components/AIQuickAdd';
-import { CheckCircle, Calendar, BookOpen, Flag, Plus } from 'lucide-react';
+import { CheckCircle, Calendar, BookOpen, Flag, Plus, RefreshCw } from 'lucide-react';
 import { AddTodoModal } from '../components/TodoModals';
 import { AddJadwalModal } from '../components/JadwalModals';
 import { AddRutinitasModal } from '../components/RutinitasModals';
@@ -23,13 +23,15 @@ const TODAY_NAME = DAYS[new Date().getDay()];
 
 
 export default function Planner() {
-    const { impersonatedUser } = useUser();
+    const { impersonatedUser, setImpersonatedUser } = useUser();
 
     const [todos, setTodos] = useState([]);
     const [rutinitas, setRutinitas] = useState([]);
     const [jadwal, setJadwal] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('todos');
+    const [isUpdatingSemester, setIsUpdatingSemester] = useState(false);
 
     const [isAddTodoOpen, setIsAddTodoOpen] = useState(false);
     const [isAddJadwalOpen, setIsAddJadwalOpen] = useState(false);
@@ -54,6 +56,30 @@ export default function Planner() {
             setLoading(false);
         }
     }, [impersonatedUser]);
+
+    const handleSemesterChange = async (e) => {
+        const newSem = e.target.value;
+        if (!impersonatedUser) return;
+        setIsUpdatingSemester(true);
+        try {
+            const data = new FormData();
+            data.append('semester_sekarang', newSem);
+            await dataService.updateUser(impersonatedUser.id_user, data);
+            
+            // Sync context so that the rest of the application reflects the new semester instantly!
+            setImpersonatedUser(prev => ({
+                ...prev,
+                semester_sekarang: newSem
+            }));
+
+            // Re-fetch schedules and curriculum data from backend instantly!
+            await fetchData();
+        } catch (err) {
+            console.error("Gagal memperbarui semester:", err);
+        } finally {
+            setIsUpdatingSemester(false);
+        }
+    };
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -88,9 +114,30 @@ export default function Planner() {
         <div className="w-full flex-1 flex flex-col min-h-0">
             {/* Header with CTAs */}
             <div className="mb-6 shrink-0 flex flex-col md:flex-row justify-between items-start md:items-end gap-5">
-                <div>
+                <div className="flex-1">
                     <h1 className="text-3xl font-bold text-slate-800">Unified Planner</h1>
-                    <p className="text-slate-600 mt-1">Kelola jadwal kuliah, rutinitas harian, dan todolist dalam satu tempat.</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                        <p className="text-slate-600">Kelola jadwal kuliah, rutinitas harian, dan todolist.</p>
+                        <span className="hidden md:inline text-slate-300">•</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Semester Aktif:</span>
+                            <select
+                                value={impersonatedUser?.semester_sekarang || '1'}
+                                onChange={handleSemesterChange}
+                                disabled={isUpdatingSemester}
+                                className="bg-emerald-50 border border-emerald-100 hover:border-emerald-300 rounded-lg px-2.5 py-1 text-xs font-extrabold text-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 cursor-pointer shadow-sm transition-all disabled:opacity-50"
+                            >
+                                {[1, 2, 3, 4, 5, 6, 7, 8].map(sem => (
+                                    <option key={sem} value={String(sem)}>Semester {sem}</option>
+                                ))}
+                            </select>
+                            {isUpdatingSemester && (
+                                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 animate-pulse ml-1">
+                                    <RefreshCw className="animate-spin text-emerald-600" size={12} /> Menyimpan...
+                                </span>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 {/* Primary Global CTAs */}
                 <div className="flex flex-wrap gap-2 w-full md:w-auto">

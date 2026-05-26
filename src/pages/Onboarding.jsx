@@ -88,6 +88,23 @@ const STEPS_CONFIG = [
   }
 ];
 
+const splitMultiSelect = (val) => {
+  if (!val) return [];
+  let temp = val;
+  const placeholders = [
+    { original: 'Sosial, Komunikasi & Bahasa', placeholder: '___SOSIAL_KOMUNIKASI_BAHASA___' },
+    { original: 'Sains, Riset & Lingkungan', placeholder: '___SAINS_RISET_LINGKUNGAN___' }
+  ];
+  placeholders.forEach(p => {
+    temp = temp.replaceAll(p.original, p.placeholder);
+  });
+  let parts = temp.split(', ').filter(Boolean);
+  return parts.map(part => {
+    const found = placeholders.find(p => p.placeholder === part);
+    return found ? found.original : part;
+  });
+};
+
 export default function Onboarding({ onComplete }) {
   const { impersonatedUser } = useUser();
   const [currentStep, setCurrentStep] = useState(0);
@@ -102,6 +119,8 @@ export default function Onboarding({ onComplete }) {
     target_karir: ''
   });
   const [loading, setLoading] = useState(false);
+  const [loadingCampuses, setLoadingCampuses] = useState(false);
+  const [loadingDepts, setLoadingDepts] = useState(false);
   const [error, setError] = useState(null);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,11 +133,14 @@ export default function Onboarding({ onComplete }) {
 
   useEffect(() => {
     const fetchCampuses = async () => {
+      setLoadingCampuses(true);
       try {
         const res = await dataService.getCampuses();
         setCampuses(res.data);
       } catch (err) {
         console.error("Failed to fetch campuses", err);
+      } finally {
+        setLoadingCampuses(false);
       }
     };
     fetchCampuses();
@@ -127,18 +149,32 @@ export default function Onboarding({ onComplete }) {
   useEffect(() => {
     if (selectedCampusId) {
       const fetchDepts = async () => {
+        setLoadingDepts(true);
         try {
           const res = await dataService.getDepartments(selectedCampusId);
           setDepartments(res.data);
         } catch (err) {
           console.error("Failed to fetch departments", err);
+        } finally {
+          setLoadingDepts(false);
         }
       };
       fetchDepts();
+    } else {
+      setDepartments([]);
     }
   }, [selectedCampusId]);
 
   const activeStepConfig = STEPS_CONFIG[currentStep];
+
+  const allOptions = useMemo(() => {
+    if (!activeStepConfig) return [];
+    const predefined = activeStepConfig.options || [];
+    if (!activeStepConfig.multiSelect) return predefined;
+    const selectedValues = splitMultiSelect(formData[activeStepConfig.field] || '');
+    const custom = selectedValues.filter(val => !predefined.includes(val));
+    return [...predefined, ...custom];
+  }, [activeStepConfig, formData]);
 
   const filteredOptions = useMemo(() => {
     if (activeStepConfig.type !== 'searchable_select') return [];
@@ -153,14 +189,19 @@ export default function Onboarding({ onComplete }) {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+
+
   const handleOptionClick = (field, option, isMulti) => {
     setFormData(prev => {
       let currentVal = prev[field] || '';
       if (isMulti) {
-        let parts = currentVal ? currentVal.split(', ').filter(Boolean) : [];
+        let parts = splitMultiSelect(currentVal);
         if (parts.includes(option)) {
           parts = parts.filter(p => p !== option);
         } else {
+          if (parts.length >= 3) {
+            return prev; // Enforce max 3 limit
+          }
           parts.push(option);
         }
         return { ...prev, [field]: parts.join(', ') };
@@ -169,6 +210,27 @@ export default function Onboarding({ onComplete }) {
       }
     });
   };
+
+  const isCurrentStepValid = useMemo(() => {
+    const field = activeStepConfig.field;
+    if (field === 'tingkat_keterampilan') {
+      // Check if all selected skills have a level assigned
+      if (!formData.keterampilan) return false;
+      const skills = formData.keterampilan.split(', ').filter(Boolean);
+      if (skills.length === 0) return false;
+      return skills.every(skill => !!formData.keterampilan_levels[skill]);
+    }
+    
+    const value = formData[field];
+    if (value === undefined || value === null) return false;
+    if (typeof value === 'string') {
+      return value.trim() !== '';
+    }
+    if (typeof value === 'number') {
+      return !isNaN(value) && value > 0;
+    }
+    return !!value;
+  }, [currentStep, formData, activeStepConfig]);
 
   const handleNext = () => {
     setSearchQuery('');
@@ -279,46 +341,59 @@ export default function Onboarding({ onComplete }) {
               </div>
 
               <div className="grid grid-cols-1 gap-3 max-h-[260px] sm:max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
-                {/* Database Options */}
-                {filteredOptions.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      handleOptionClick(activeStepConfig.field, item.name, false);
-                      if (activeStepConfig.field === 'universitas') {
-                        setSelectedCampusId(item.id);
-                        setIsCampusManual(false);
-                      } else {
-                        setIsDeptManual(false);
-                      }
-                      setSearchQuery('');
-                    }}
-                    className={`flex items-center justify-between p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border-2 transition-all ${
-                      formData[activeStepConfig.field] === item.name
-                        ? 'bg-emerald-50 border-emerald-600 shadow-md transform scale-[1.01]'
-                        : 'bg-white border-gray-50 hover:border-emerald-200 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${formData[activeStepConfig.field] === item.name ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
-                        {activeStepConfig.field === 'universitas' ? <Globe size={16} className="sm:w-5 sm:h-5" /> : <GraduationCap size={16} className="sm:w-5 sm:h-5" />}
+                {/* Loading state spinner */}
+                {((activeStepConfig.field === 'universitas' && loadingCampuses) || 
+                  (activeStepConfig.field === 'jurusan' && loadingDepts)) ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
+                    <div className="w-8 h-8 border-4 border-emerald-600/20 border-t-emerald-600 rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium animate-pulse text-gray-500">Menghubungkan ke database kurikulum...</span>
+                  </div>
+                ) : filteredOptions.length === 0 ? (
+                  <div className="text-center py-12 text-gray-400 text-sm italic">
+                    Tidak ada hasil pencarian.
+                  </div>
+                ) : (
+                  /* Database Options */
+                  filteredOptions.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        handleOptionClick(activeStepConfig.field, item.name, false);
+                        if (activeStepConfig.field === 'universitas') {
+                          setSelectedCampusId(item.id);
+                          setIsCampusManual(false);
+                        } else {
+                          setIsDeptManual(false);
+                        }
+                        setSearchQuery('');
+                      }}
+                      className={`flex items-center justify-between p-3.5 sm:p-5 rounded-xl sm:rounded-2xl border-2 transition-all ${
+                        formData[activeStepConfig.field] === item.name
+                          ? 'bg-emerald-50 border-emerald-600 shadow-md transform scale-[1.01]'
+                          : 'bg-white border-gray-50 hover:border-emerald-200 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                        <div className={`p-2 sm:p-3 rounded-lg sm:rounded-xl shrink-0 ${formData[activeStepConfig.field] === item.name ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                          {activeStepConfig.field === 'universitas' ? <Globe size={16} className="sm:w-5 sm:h-5" /> : <GraduationCap size={16} className="sm:w-5 sm:h-5" />}
+                        </div>
+                        <span className={`text-sm sm:text-lg font-semibold truncate ${formData[activeStepConfig.field] === item.name ? 'text-emerald-900' : 'text-gray-700'}`}>
+                          {item.name}
+                        </span>
                       </div>
-                      <span className={`text-sm sm:text-lg font-semibold truncate ${formData[activeStepConfig.field] === item.name ? 'text-emerald-900' : 'text-gray-700'}`}>
-                        {item.name}
-                      </span>
-                    </div>
-                    {formData[activeStepConfig.field] === item.name ? (
-                      <div className="flex items-center gap-1.5 bg-emerald-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold uppercase tracking-wider shrink-0 animate-in fade-in zoom-in duration-300">
-                        <Database size={10} className="sm:w-3 sm:h-3" />
-                        Kurikulum Terhubung
-                      </div>
-                    ) : (
-                      <div className="text-gray-300 shrink-0">
-                        <Database size={16} className="sm:w-[18px] sm:h-[18px]" />
-                      </div>
-                    )}
-                  </button>
-                ))}
+                      {formData[activeStepConfig.field] === item.name ? (
+                        <div className="flex items-center gap-1.5 bg-emerald-600 text-white px-2 py-0.5 sm:px-3 sm:py-1 rounded-full text-[9px] sm:text-xs font-bold uppercase tracking-wider shrink-0 animate-in fade-in zoom-in duration-300">
+                          <Database size={10} className="sm:w-3 sm:h-3" />
+                          Kurikulum Terhubung
+                        </div>
+                      ) : (
+                        <div className="text-gray-300 shrink-0">
+                          <Database size={16} className="sm:w-[18px] sm:h-[18px]" />
+                        </div>
+                      )}
+                    </button>
+                  ))
+                )}
 
                 {/* Manual Input Fallback */}
                 {searchQuery && !filteredOptions.some(o => o.name.toLowerCase() === searchQuery.toLowerCase()) && (
@@ -390,24 +465,41 @@ export default function Onboarding({ onComplete }) {
             </div>
           ) : (
             <div className="space-y-6 sm:space-y-8">
+              {/* Selected Count Indicator for Multi-select */}
+              {activeStepConfig.multiSelect && (
+                <div className="flex justify-between items-center text-xs sm:text-sm text-gray-400 font-bold bg-gray-50/50 px-4 py-2 rounded-xl border border-gray-100">
+                  <span className="uppercase tracking-wider">Silakan pilih atau ketik sendiri</span>
+                  <span className="text-gray-500">Terpilih: <span className="text-emerald-600 text-base font-black">{splitMultiSelect(formData[activeStepConfig.field]).length}</span> / <span className="text-gray-700 text-base font-black">3</span></span>
+                </div>
+              )}
+
               {/* Multi-select or Text/Number */}
               <div className="flex flex-wrap gap-2 sm:gap-3">
-                {activeStepConfig.options.map((option, idx) => {
+                {allOptions.map((option, idx) => {
                   const isSelected = activeStepConfig.multiSelect
-                    ? (formData[activeStepConfig.field] || '').split(', ').includes(option)
+                    ? splitMultiSelect(formData[activeStepConfig.field] || '').includes(option)
                     : formData[activeStepConfig.field] === option;
+                  const isCustom = activeStepConfig.options ? !activeStepConfig.options.includes(option) : false;
 
                   return (
                     <button
                       key={idx}
+                      type="button"
                       onClick={() => handleOptionClick(activeStepConfig.field, option, activeStepConfig.multiSelect)}
-                      className={`px-4 sm:px-8 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-lg font-bold transition-all duration-300 ${
+                      className={`px-4 sm:px-8 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl text-sm sm:text-lg font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                         isSelected 
                         ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 transform scale-102' 
                         : 'bg-white border-2 border-gray-100 text-gray-600 hover:border-emerald-300 hover:bg-emerald-50/30'
                       }`}
                     >
-                      {option}
+                      <span>{option}</span>
+                      {isSelected && isCustom && (
+                        <span className="bg-emerald-700/50 hover:bg-emerald-800 text-white rounded-full p-0.5 ml-1 transition-colors shrink-0">
+                          <svg className="w-3 sm:w-3.5 h-3 sm:h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -432,12 +524,16 @@ export default function Onboarding({ onComplete }) {
                       type="text"
                       value={extraInput}
                       onChange={(e) => setExtraInput(e.target.value)}
+                      disabled={splitMultiSelect(formData[activeStepConfig.field] || '').length >= 3}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ',') {
                           e.preventDefault();
                           if (extraInput.trim()) {
                             const cur = formData[activeStepConfig.field] || '';
-                            const parts = cur ? cur.split(', ').filter(Boolean) : [];
+                            const parts = splitMultiSelect(cur);
+                            if (parts.length >= 3) {
+                              return; // Limit to max 3
+                            }
                             if (!parts.includes(extraInput.trim())) {
                               setFormData({ ...formData, [activeStepConfig.field]: [...parts, extraInput.trim()].join(', ') });
                             }
@@ -445,21 +541,38 @@ export default function Onboarding({ onComplete }) {
                           }
                         }
                       }}
-                      placeholder={activeStepConfig.placeholder}
-                      className="w-full bg-gray-50 border-2 border-gray-100 rounded-xl sm:rounded-2xl pl-4 sm:pl-6 pr-24 py-3 sm:py-5 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-sm sm:text-xl text-gray-800 font-medium shadow-sm"
+                      placeholder={
+                        splitMultiSelect(formData[activeStepConfig.field] || '').length >= 3
+                          ? 'Maksimal 3 pilihan sudah tercapai.'
+                          : activeStepConfig.placeholder
+                      }
+                      className={`w-full border-2 rounded-xl sm:rounded-2xl pl-4 sm:pl-6 pr-24 py-3 sm:py-5 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all text-sm sm:text-xl font-medium shadow-sm ${
+                        splitMultiSelect(formData[activeStepConfig.field] || '').length >= 3
+                          ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed placeholder:text-gray-400'
+                          : 'bg-gray-50 border-gray-100 text-gray-800 placeholder:text-gray-400'
+                      }`}
                     />
                     <button 
+                      type="button"
+                      disabled={splitMultiSelect(formData[activeStepConfig.field] || '').length >= 3 || !extraInput.trim()}
                       onClick={() => {
                         if (extraInput.trim()) {
                           const cur = formData[activeStepConfig.field] || '';
-                          const parts = cur ? cur.split(', ').filter(Boolean) : [];
+                          const parts = splitMultiSelect(cur);
+                          if (parts.length >= 3) {
+                            return; // Limit to max 3
+                          }
                           if (!parts.includes(extraInput.trim())) {
                             setFormData({ ...formData, [activeStepConfig.field]: [...parts, extraInput.trim()].join(', ') });
                           }
                           setExtraInput('');
                         }
                       }}
-                      className="absolute right-2 top-2 bottom-2 px-4 sm:px-6 bg-emerald-600 text-white rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm tracking-wide hover:bg-emerald-700 transition-colors"
+                      className={`absolute right-2 top-2 bottom-2 px-4 sm:px-6 rounded-lg sm:rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors ${
+                        splitMultiSelect(formData[activeStepConfig.field] || '').length >= 3 || !extraInput.trim()
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      }`}
                     >
                       TAMBAH
                     </button>
@@ -498,15 +611,24 @@ export default function Onboarding({ onComplete }) {
           {currentStep < STEPS_CONFIG.length - 1 ? (
             <button
               onClick={handleNext}
-              className="px-5 sm:px-12 py-2.5 sm:py-4 bg-emerald-600 text-white font-bold rounded-xl sm:rounded-2xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 flex items-center justify-center gap-1.5 sm:gap-3 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-xs sm:text-base"
+              disabled={!isCurrentStepValid}
+              className={`px-5 sm:px-12 py-2.5 sm:py-4 font-bold rounded-xl sm:rounded-2xl flex items-center justify-center gap-1.5 sm:gap-3 transition-all transform text-xs sm:text-base ${
+                isCurrentStepValid 
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 active:translate-y-0' 
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               LANJUT <ChevronRight size={18} className="sm:w-6 sm:h-6" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={loading}
-              className="px-5 sm:px-12 py-2.5 sm:py-4 bg-emerald-600 text-white font-black rounded-xl sm:rounded-2xl hover:bg-emerald-700 shadow-lg shadow-emerald-200 flex items-center justify-center gap-1.5 sm:gap-3 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 text-xs sm:text-base"
+              disabled={loading || !isCurrentStepValid}
+              className={`px-5 sm:px-12 py-2.5 sm:py-4 font-black rounded-xl sm:rounded-2xl flex items-center justify-center gap-1.5 sm:gap-3 transition-all transform text-xs sm:text-base ${
+                isCurrentStepValid && !loading
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 active:translate-y-0'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
             >
               {loading ? 'MENYIMPAN...' : <><CheckCircle size={18} className="sm:w-6 sm:h-6" /> SELESAI</>}
             </button>

@@ -115,12 +115,11 @@ export default function ChatAI() {
                 {msg.role === 'user' ? (
                    <p className="font-medium">{msg.message}</p>
                 ) : (
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    className="markdown-content"
-                  >
-                    {msg.message}
-                  </ReactMarkdown>
+                  <div className="markdown-content">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.message}
+                    </ReactMarkdown>
+                  </div>
                 )}
               </div>
             </div>

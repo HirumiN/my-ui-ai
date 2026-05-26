@@ -23,10 +23,19 @@ function JadwalSection({ impersonatedUser }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [filterDay, setFilterDay] = useState('All');
-    const [selectedSemesterLevel, setSelectedSemesterLevel] = useState(1);
+    const [selectedSemesterLevel, setSelectedSemesterLevel] = useState(
+        impersonatedUser?.semester_sekarang ? parseInt(impersonatedUser.semester_sekarang) : 1
+    );
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [current, setCurrent] = useState(null);
+
+    // Sync selectedSemesterLevel with student's current semester when user loads
+    useEffect(() => {
+        if (impersonatedUser?.semester_sekarang) {
+            setSelectedSemesterLevel(parseInt(impersonatedUser.semester_sekarang));
+        }
+    }, [impersonatedUser]);
 
     const fetchJadwal = useCallback(async () => {
         if (!impersonatedUser) { setJadwal([]); setLoading(false); return; }
