@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, TrendingUp, User, Repeat } from 'lucide-react';
+import { RefreshCw, Save, Check, ArrowRight, ListTodo, Map, Briefcase, X, TrendingUp, User, Repeat, AlertTriangle, Terminal, ChevronDown, ChevronUp, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Roadmap from './Roadmap';
 import SkillGapPanel from '../components/SkillGapPanel';
@@ -47,6 +47,7 @@ export default function CareerAnalysis() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [roadmapKey, setRoadmapKey] = useState(0);
   const [hasRoadmap, setHasRoadmap] = useState(true); // Default to true to avoid flicker if needed, but Roadmap will update it
+  const [showDevLogs, setShowDevLogs] = useState(false);
 
   const handleSkillUpdate = () => setRefreshKey(prev => prev + 1);
 
@@ -89,6 +90,27 @@ export default function CareerAnalysis() {
     </div>
   );
 
+  const isOnboardingDone = user?.universitas && user?.jurusan && user?.target_karir;
+  if (!isOnboardingDone) {
+    return (
+      <div className="p-6 max-w-xl mx-auto mt-10">
+        <div className="bg-gradient-to-br from-amber-50 via-white to-orange-50 border border-amber-100 rounded-3xl p-8 text-center shadow-lg space-y-6">
+          <div className="w-16 h-16 mx-auto flex items-center justify-center bg-amber-100 rounded-2xl text-amber-600">
+            <User size={32} />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-slate-800">
+              Profil Akademik Belum Lengkap
+            </h3>
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Silakan lengkapi data Onboarding Anda (seperti Universitas, Jurusan, dan Target Karir) terlebih dahulu di halaman Profile agar AI dapat mendesain roadmap karir Anda secara akurat.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full space-y-10 pb-16">
 
@@ -126,8 +148,56 @@ export default function CareerAnalysis() {
       </div>
 
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm">
-          {error}
+        <div className="bg-gradient-to-br from-rose-50 to-amber-50/50 border border-rose-200/60 rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-rose-100 rounded-xl text-rose-600 shrink-0 animate-pulse">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="space-y-1 flex-1">
+              <h4 className="font-bold text-rose-900 text-base">
+                Layanan AI Sedang Mengalami Kendala
+              </h4>
+              <p className="text-slate-600 text-sm leading-relaxed">
+                {error}
+              </p>
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setShowDevLogs(!showDevLogs)}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 transition"
+                >
+                  <Terminal size={14} />
+                  {showDevLogs ? 'Sembunyikan Log Dev' : 'Lihat Log Detail & Panduan Token'}
+                  {showDevLogs ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </button>
+                <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Info Tambahan di Inspect Console
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {showDevLogs && (
+            <div className="bg-slate-900 text-slate-200 font-mono text-xs rounded-xl p-4 border border-slate-800 space-y-3 overflow-x-auto shadow-inner">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
+                <span className="flex items-center gap-1.5"><Terminal size={12} /> SYSTEM_DIAGNOSTICS_LOG</span>
+                <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold">GEMINI_RAG_V1</span>
+              </div>
+              <p className="text-rose-400 font-semibold">
+                [EXHAUSTION_WARNING] Terjadi hambatan token/limitasi pada endpoint '/rag/query' atau '/generate-career'.
+              </p>
+              <div className="space-y-1 text-slate-300">
+                <p><span className="text-slate-500">1.</span> Pastikan Anda sudah mengisi <span className="text-emerald-400">GEMINI_API_KEY</span> yang aktif di file <span className="text-emerald-400">fastapi-simple-rag/.env</span>.</p>
+                <p><span className="text-slate-500">2.</span> Free tier rate limit Google Gemini adalah 15 requests per menit & 20 requests per hari pada beberapa project.</p>
+                <p><span className="text-slate-500">3.</span> Jika API Key Anda terekspos ke repositori publik, Google akan <span className="text-rose-400">menonaktifkan kunci tersebut secara permanen</span>.</p>
+              </div>
+              <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                <p className="font-bold text-slate-300">💡 Cara Mengganti API Key:</p>
+                <p>1. Buka berkas <code className="bg-slate-800 px-1 py-0.5 rounded text-rose-300">fastapi-simple-rag/.env</code></p>
+                <p>2. Cari baris <code className="bg-slate-800 px-1 py-0.5 rounded text-rose-300">GEMINI_API_KEY=AIzaSy...</code></p>
+                <p>3. Ganti dengan API Key baru Anda, simpan, lalu reload halaman ini!</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

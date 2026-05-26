@@ -69,11 +69,34 @@ export const UserProvider = ({ children, initialUser }) => {
       });
       return res.data;
     } catch (err) {
-      console.error(err);
-      const errMsg = err.response?.status === 401
-        ? 'Sesi tidak valid. Silakan login ulang.'
-        : 'Gagal menghasilkan rekomendasi karir. AI mungkin sedang sibuk.';
-      setCareerError(errMsg);
+      console.error("[CAMPUS AI - ERROR DETAILS]", err);
+      
+      const responseData = err.response?.data;
+      const status = err.response?.status;
+      const detailMsg = responseData?.detail || err.message;
+      
+      console.warn("⚠️ [CAMPUS AI - API DETAILS] ⚠️");
+      console.warn(`Status Code: ${status}`);
+      console.warn(`Detail Message:`, responseData);
+      
+      let friendlyError = 'Gagal menghubungi AI. Layanan sedang sibuk atau kuota habis.';
+      
+      if (status === 401) {
+        friendlyError = 'Sesi tidak valid. Silakan login ulang.';
+      } else if (status === 429 || (detailMsg && (detailMsg.toLowerCase().includes("quota") || detailMsg.toLowerCase().includes("rate limit") || detailMsg.toLowerCase().includes("exhausted") || detailMsg.toLowerCase().includes("429")))) {
+        friendlyError = '⚠️ Kuota API Gemini Anda Telah Habis atau Kena Limit (Rate Limit - 429). Silakan tunggu beberapa saat sebelum mencoba lagi atau ganti dengan API Key yang valid.';
+        console.warn("❌ [CAMPUS AI - LIMIT EXCEEDED] Akun Gemini Anda mencapai batas limit kuota pemakaian harian/menit (RESOURCE_EXHAUSTED).");
+      } else if (detailMsg && detailMsg.toLowerCase().includes("leaked")) {
+        friendlyError = '🔒 Keamanan API Key Terdeteksi Kebocoran (Leaked Key). Google memblokir kunci ini demi keamanan. Harap ganti API Key Anda di file .env.';
+        console.warn("❌ [CAMPUS AI - LEAKED KEY DETECTED] Google menonaktifkan API Key ini karena terdeteksi bocor di public repository.");
+      } else if (detailMsg && (detailMsg.toLowerCase().includes("api key not valid") || detailMsg.toLowerCase().includes("invalid"))) {
+        friendlyError = '🔑 API Key Gemini Tidak Valid. Periksa penulisan kunci API di file .env Anda.';
+        console.warn("❌ [CAMPUS AI - INVALID API KEY] API Key yang diinput tidak dikenali oleh Google Cloud Console.");
+      } else {
+        friendlyError = `Gagal melakukan analisis karir: ${detailMsg}`;
+      }
+      
+      setCareerError(friendlyError);
     } finally {
       setCareerLoading(false);
     }
