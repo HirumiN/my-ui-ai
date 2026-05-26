@@ -17,10 +17,12 @@ const STEPS_CONFIG = [
   {
     field: 'umur',
     title: 'Berapa umur Anda?',
-    subtitle: 'Membantu kami memahami tahap kehidupan Anda.',
+    subtitle: 'Membantu kami memahami tahap kehidupan Anda (Umur: 15 - 100 tahun).',
     options: [],
     placeholder: 'Ketik umur Anda...',
     type: 'number',
+    min: 15,
+    max: 100,
     multiSelect: false
   },
   {
@@ -44,10 +46,11 @@ const STEPS_CONFIG = [
   {
     field: 'semester_sekarang',
     title: 'Semester berapa Anda?',
-    subtitle: 'Maksimal semester 8.',
+    subtitle: '',
     options: [],
     placeholder: 'Contoh: 1',
     type: 'number',
+    min: 1,
     max: 8,
     multiSelect: false
   },
@@ -122,6 +125,10 @@ export default function Onboarding({ onComplete }) {
   const [loadingCampuses, setLoadingCampuses] = useState(false);
   const [loadingDepts, setLoadingDepts] = useState(false);
   const [error, setError] = useState(null);
+  const [showAgePopup1, setShowAgePopup1] = useState(false);
+  const [showAgePopup2, setShowAgePopup2] = useState(false);
+  const [showBocilPopup, setShowBocilPopup] = useState(false);
+  const [showSesepuhPopup, setShowSesepuhPopup] = useState(false);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [extraInput, setExtraInput] = useState('');
@@ -223,6 +230,16 @@ export default function Onboarding({ onComplete }) {
     
     const value = formData[field];
     if (value === undefined || value === null) return false;
+
+    if (field === 'umur') {
+      const num = Number(value);
+      return !isNaN(num) && num > 0;
+    }
+    if (field === 'semester_sekarang') {
+      const num = Number(value);
+      return !isNaN(num) && num >= 1 && num <= 8;
+    }
+
     if (typeof value === 'string') {
       return value.trim() !== '';
     }
@@ -235,6 +252,24 @@ export default function Onboarding({ onComplete }) {
   const handleNext = () => {
     setSearchQuery('');
     setExtraInput('');
+    
+    // Custom funny validation for age (Step 0)
+    if (currentStep === 0) {
+      const ageVal = Number(formData.umur);
+      if (ageVal < 15) {
+        setShowBocilPopup(true);
+        return;
+      }
+      if (ageVal > 100) {
+        setShowSesepuhPopup(true);
+        return;
+      }
+      if (ageVal < 17 || ageVal > 25) {
+        setShowAgePopup1(true);
+        return;
+      }
+    }
+
     if (currentStep < STEPS_CONFIG.length - 1) {
       setCurrentStep(prev => prev + 1);
     }
@@ -634,6 +669,132 @@ export default function Onboarding({ onComplete }) {
             </button>
           )}
         </div>
+        {/* Funny Age Validation Popup 1 */}
+        {showAgePopup1 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-full shadow-2xl border border-amber-100 transform transition-all duration-300 scale-in-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                <span className="text-3xl">🤔</span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-800">
+                  serius umurmu segitu bang?
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  Umur yang diinput ({formData.umur} tahun) di luar rentang usia mahasiswa normal. Yakin data ini sudah benar?
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAgePopup1(false);
+                    setShowAgePopup2(true);
+                  }}
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-xl transition shadow-md shadow-amber-100"
+                >
+                  Iya
+                </button>
+                <button
+                  onClick={() => setShowAgePopup1(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition"
+                >
+                  Tidak
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Funny Age Validation Popup 2 */}
+        {showAgePopup2 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-full shadow-2xl border border-rose-100 transform transition-all duration-300 scale-in-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
+                <span className="text-3xl">🤨</span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-slate-800">
+                  yang bener aja bang
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  Beneran umurmu {formData.umur} tahun? Nanti analisis AI karirmu bisa jadi kurang pas lho.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAgePopup2(false);
+                    // Force proceed to the next step
+                    setCurrentStep(prev => prev + 1);
+                  }}
+                  className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 rounded-xl transition shadow-md shadow-rose-100"
+                >
+                  Benar
+                </button>
+                <button
+                  onClick={() => setShowAgePopup2(false)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition"
+                >
+                  Tidak
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Funny Age Validation: Bocil (<15) */}
+        {showBocilPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-full shadow-2xl border border-rose-100 transform transition-all duration-300 scale-in-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-rose-100 rounded-full flex items-center justify-center text-rose-600">
+                <span className="text-3xl">👶</span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-rose-900">
+                  Waduh, Bocil Epep Terdeteksi! 👶🎮
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  Lu masih terlalu muda buat kuliah bang ({formData.umur} tahun). Mending main epep dulu sana baru daftar lagi pas udah gede!
+                </p>
+              </div>
+              <div>
+                <button
+                  onClick={() => setShowBocilPopup(false)}
+                  className="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-rose-200"
+                >
+                  Oke Bang, Gua Tobat 🙏
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Funny Age Validation: Sesepuh (>100) */}
+        {showSesepuhPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 text-center max-w-sm w-full shadow-2xl border border-amber-100 transform transition-all duration-300 scale-in-center space-y-6">
+              <div className="w-16 h-16 mx-auto bg-amber-100 rounded-full flex items-center justify-center text-amber-600">
+                <span className="text-3xl">🧓</span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-black text-amber-900">
+                  Waduh, Sesepuh Majapahit! 🧓🏰
+                </h3>
+                <p className="text-slate-500 text-sm leading-relaxed">
+                  Umur segini ({formData.umur} tahun) udah bukan waktunya kuliah lagi bang. Mending fokus tobat dan istirahat santai di rumah aja!
+                </p>
+              </div>
+              <div>
+                <button
+                  onClick={() => setShowSesepuhPopup(false)}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-amber-200"
+                >
+                  Oke Bang, Siap 🤝
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
