@@ -104,32 +104,7 @@ export default function ChatAI() {
     );
   }
 
-  // Warning 2: Onboarding is complete, but the background task is still creating their roadmap/assets (Onboarding Process)
-  if (isOnboardingDone && roadmaps.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full bg-slate-50 p-6 sm:p-12 animate-in fade-in duration-300">
-        <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 border border-emerald-100 rounded-3xl p-8 sm:p-12 text-center shadow-lg space-y-6 max-w-xl animate-in zoom-in-95 duration-300">
-          <div className="relative w-16 h-16 mx-auto flex items-center justify-center bg-emerald-100 rounded-2xl text-emerald-600">
-            <RefreshCw size={32} className="animate-spin animate-pulse" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-black text-slate-800">
-              Proses Onboarding AI Sedang Berlangsung
-            </h3>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              Selamat datang! Kami sedang memproses data Onboarding Anda untuk pertama kalinya. Google Gemini sedang menyelaraskan mata kuliah dan menyusun Peta Karir (Roadmap) awal Anda di latar belakang.
-            </p>
-            <p className="text-emerald-700 text-xs font-semibold bg-emerald-50 py-2 px-4 rounded-xl border border-emerald-100 inline-block animate-pulse">
-              Asisten AI akan terbuka secara otomatis segera setelah inisialisasi onboarding selesai!
-            </p>
-          </div>
-          <div className="pt-2 flex items-center justify-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-widest animate-pulse">
-            <Sparkles size={12} className="text-emerald-500 animate-spin" /> Memproses Onboarding Anda...
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   // Warning 3: A new career roadmap is being generated/updated (Roadmap Update Process)
   if (careerLoading) {

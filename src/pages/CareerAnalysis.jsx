@@ -148,14 +148,24 @@ export default function CareerAnalysis() {
       </div>
 
       {error && (
-        <div className="bg-gradient-to-br from-rose-50 to-amber-50/50 border border-rose-200/60 rounded-2xl p-5 shadow-sm space-y-4">
+        <div className={`bg-gradient-to-br border rounded-2xl p-5 shadow-sm space-y-4 ${
+          error.includes("Batasi Pemakaian") 
+            ? "from-amber-50 to-orange-50 border-amber-200" 
+            : "from-rose-50 to-amber-50/50 border-rose-200/60"
+        }`}>
           <div className="flex items-start gap-4">
-            <div className="p-3 bg-rose-100 rounded-xl text-rose-600 shrink-0 animate-pulse">
+            <div className={`p-3 rounded-xl shrink-0 ${
+              error.includes("Batasi Pemakaian")
+                ? "bg-amber-100 text-amber-600"
+                : "bg-rose-100 text-rose-600 animate-pulse"
+            }`}>
               <AlertTriangle size={24} />
             </div>
             <div className="space-y-1 flex-1">
-              <h4 className="font-bold text-rose-900 text-base">
-                Layanan AI Sedang Mengalami Kendala
+              <h4 className={`font-bold text-base ${
+                error.includes("Batasi Pemakaian") ? "text-amber-900" : "text-rose-900"
+              }`}>
+                {error.includes("Batasi Pemakaian") ? "Batas Pembuatan Roadmap Terpenuhi" : "Layanan AI Sedang Mengalami Kendala"}
               </h4>
               <p className="text-slate-600 text-sm leading-relaxed">
                 {error}

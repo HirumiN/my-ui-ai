@@ -44,16 +44,7 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
 
   useEffect(() => { fetchRoadmaps(); }, [fetchRoadmaps]);
 
-  // Auto-refresh roadmap list if onboarding is complete but no roadmap exists yet (AI is generating in background)
-  useEffect(() => {
-    const isOnboardingDone = user?.universitas && user?.jurusan && user?.target_karir;
-    if (isOnboardingDone && roadmaps.length === 0 && !loading && !fetchError) {
-      const interval = setInterval(() => {
-        fetchRoadmaps();
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [user, roadmaps, loading, fetchError, fetchRoadmaps]);
+
 
   const fetchDetails = useCallback(async () => {
     if (!activeRoadmapId) return;
@@ -182,54 +173,17 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           <p className="text-rose-600 font-semibold">{fetchError}</p>
         </div>
       ) : roadmaps.length === 0 ? (
-        (() => {
-          const isOnboardingDone = user?.universitas && user?.jurusan && user?.target_karir;
-          if (isOnboardingDone) {
-            return (
-              <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 border border-emerald-100 rounded-3xl p-8 sm:p-12 text-center shadow-lg space-y-6 max-w-2xl mx-auto">
-                <div className="relative w-20 h-20 mx-auto flex items-center justify-center bg-emerald-100 rounded-full text-emerald-600 animate-bounce">
-                  <Map size={40} className="animate-pulse" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-800">
-                    Campus AI Sedang Menganalisis Profil Anda...
-                  </h3>
-                </div>
-                {/* Visual steps tracker */}
-                <div className="bg-white/80 border border-slate-100 rounded-2xl p-4 max-w-md mx-auto space-y-3 shadow-inner">
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px]">✓</div>
-                    <span className="text-xs font-semibold text-slate-700">1. Profil & Jadwal Akademik Tersinkronisasi</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-white font-bold flex items-center justify-center text-[10px]">✓</div>
-                    <span className="text-xs font-semibold text-slate-700">2. Vector Embeddings Pembelajaran Di-generate</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-left">
-                    <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center text-[10px] animate-spin">⚡</div>
-                    <span className="text-xs font-bold text-emerald-600">3. AI Menyusun Custom Roadmap & Rencana Aksi (To-do)</span>
-                  </div>
-                </div>
-                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center gap-1.5 animate-pulse">
-                  <RefreshCw size={10} className="animate-spin" /> Memuat di latar belakang...
-                </div>
-              </div>
-            );
-          }
-          return (
-            <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-6 sm:p-12 text-center shadow-sm">
-              <MapPin className="mx-auto text-emerald-400 mb-4 sm:mb-6 sm:w-12 sm:h-12" size={40} />
-              <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
-              <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6 sm:mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan buat roadmap otomatis sekarang.</p>
-              <button
-                onClick={onGenerate}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-emerald-100 transition-all mx-auto text-sm sm:text-base"
-              >
-                Cek Rekomendasi Karir <ArrowRight size={16} />
-              </button>
-            </div>
-          );
-        })()
+        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-6 sm:p-12 text-center shadow-sm max-w-2xl mx-auto animate-in fade-in duration-300">
+          <MapPin className="mx-auto text-emerald-400 mb-4 sm:mb-6 sm:w-12 sm:h-12" size={40} />
+          <h3 className="text-xl sm:text-2xl font-black text-slate-800 mb-2">Belum Ada Roadmap Aktif</h3>
+          <p className="text-slate-500 text-sm max-w-md mx-auto mb-6 sm:mb-8">Anda belum memiliki rencana karir. Gunakan AI untuk menganalisis jalur karir terbaik dan rancang Peta Karir (Roadmap) personal Anda sekarang.</p>
+          <button
+            onClick={onGenerate}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 sm:px-8 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-emerald-100 transition-all mx-auto text-sm sm:text-base"
+          >
+            Mulai Analisis AI & Buat Roadmap Pertama <ArrowRight size={16} />
+          </button>
+        </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0">
           {/* Main: Phase Node Graph (Expanded) */}
