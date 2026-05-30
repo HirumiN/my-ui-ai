@@ -1,4 +1,5 @@
-import { Bell, Menu } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Bell, Menu, LogOut } from "lucide-react";
 import { useUser } from "../contexts/UserContext";
 import { useLocation } from "react-router-dom";
 
@@ -23,10 +24,25 @@ function getAvatarColor(name) {
   return colors[idx];
 }
 
-const Navbar = ({ onToggleSidebar }) => {
+const Navbar = ({ onToggleSidebar, onLogout }) => {
   const { impersonatedUser: user } = useUser();
   const location = useLocation();
   const title = pageTitles[location.pathname] || "Dashboard";
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3.5 flex items-center justify-between sticky top-0 z-30 shadow-sm">
@@ -51,14 +67,35 @@ const Navbar = ({ onToggleSidebar }) => {
         </button>
 
         {user && (
-          <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(user.nama)} text-emerald-950 font-bold text-xs flex items-center justify-center shadow-md`}>
-              {getInitials(user.nama)}
-            </div>
-            <div className="hidden sm:block">
-              <p className="text-xs font-semibold text-slate-800 leading-tight">{user.nama}</p>
-              <p className="text-[10px] text-slate-600 leading-tight">{user.email}</p>
-            </div>
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2.5 hover:bg-slate-50 p-1.5 rounded-xl transition-all outline-none focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${getAvatarColor(user.nama)} text-emerald-950 font-bold text-xs flex items-center justify-center shadow-md`}>
+                {getInitials(user.nama)}
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-xs font-semibold text-slate-800 leading-tight">{user.nama}</p>
+                <p className="text-[10px] text-slate-600 leading-tight">{user.email}</p>
+              </div>
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="px-4 py-2 border-b border-slate-50">
+                  <p className="text-xs font-bold text-slate-800 truncate">{user.nama}</p>
+                  <p className="text-[10px] text-slate-400 truncate">{user.email}</p>
+                </div>
+                <button
+                  onClick={onLogout}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-all text-left"
+                >
+                  <LogOut size={14} />
+                  Keluar / Logout
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

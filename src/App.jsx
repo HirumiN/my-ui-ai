@@ -31,7 +31,13 @@ function App() {
     initAuth();
   }, []);
 
-  const handleLogin = () => setIsLoggedIn(true);
+  const handleLogin = async () => {
+    const user = await authService.checkAuth();
+    if (user) {
+      setCurrentUser(user);
+      setIsLoggedIn(true);
+    }
+  };
   const handleLogout = async () => {
     await authService.logout();
     setIsLoggedIn(false);

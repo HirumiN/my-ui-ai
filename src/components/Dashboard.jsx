@@ -17,7 +17,7 @@ export default function Dashboard({ onLogout }) {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Pass toggle handler ke Navbar */}
-        <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
+        <Navbar onToggleSidebar={() => setSidebarOpen(prev => !prev)} onLogout={onLogout} />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col relative">
           <Outlet />
         </main>
