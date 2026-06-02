@@ -170,30 +170,32 @@ export default function CareerAnalysis() {
               <p className="text-slate-600 text-sm leading-relaxed">
                 {error}
               </p>
-              <div className="pt-2 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => setShowDevLogs(!showDevLogs)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 transition"
-                >
-                  <Terminal size={14} />
-                  {showDevLogs ? 'Sembunyikan Log Dev' : 'Lihat Log Detail & Panduan Token'}
-                  {showDevLogs ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                </button>
-                <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                  Info Tambahan di Inspect Console
-                </span>
-              </div>
+              {!error.includes("Batasi Pemakaian") && (
+                <div className="pt-2 flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => setShowDevLogs(!showDevLogs)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 hover:text-rose-800 transition"
+                  >
+                    <Terminal size={14} />
+                    {showDevLogs ? 'Sembunyikan Log Dev' : 'Lihat Log Detail & Panduan Token'}
+                    {showDevLogs ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </button>
+                  <span className="text-[10px] bg-rose-100 text-rose-700 font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    Info Tambahan di Inspect Console
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {showDevLogs && (
+          {showDevLogs && !error.includes("Batasi Pemakaian") && (
             <div className="bg-slate-900 text-slate-200 font-mono text-xs rounded-xl p-4 border border-slate-800 space-y-3 overflow-x-auto shadow-inner">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2 text-slate-400">
                 <span className="flex items-center gap-1.5"><Terminal size={12} /> SYSTEM_DIAGNOSTICS_LOG</span>
                 <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-bold">GEMINI_RAG_V1</span>
               </div>
               <p className="text-rose-400 font-semibold">
-                [EXHAUSTION_WARNING] Terjadi hambatan token/limitasi pada endpoint '/rag/query' atau '/generate-career'.
+                [EXHAUSTION_WARNING] Terjadi hambatan token/limitasi pada endpoint '/rag/query' or '/generate-career'.
               </p>
               <div className="space-y-1 text-slate-300">
                 <p><span className="text-slate-500">1.</span> Pastikan Anda sudah mengisi <span className="text-emerald-400">GEMINI_API_KEY</span> yang aktif di file <span className="text-emerald-400">fastapi-simple-rag/.env</span>.</p>
