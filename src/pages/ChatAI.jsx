@@ -169,6 +169,9 @@ export default function ChatAI() {
       if (status === 429 || (detailMsg && (detailMsg.toLowerCase().includes("quota") || detailMsg.toLowerCase().includes("rate limit") || detailMsg.toLowerCase().includes("exhausted") || detailMsg.toLowerCase().includes("429")))) {
         botMessage = '⚠️ **Limit Quota Terlampaui (429)**: Kuota API Gemini Anda saat ini sedang habis atau mencapai batas limit harian. Silakan tunggu beberapa saat atau hubungi administrator untuk menggunakan API Key yang valid.';
         console.warn("❌ [CAMPUS AI - CHAT LIMIT EXCEEDED] Akun Gemini Anda mencapai batas limit kuota pemakaian harian/menit (RESOURCE_EXHAUSTED).");
+      } else if (detailMsg && detailMsg.includes("Batasi Pemakaian")) {
+        botMessage = `⏳ **Batas Pemakaian AI Terpenuhi**: ${detailMsg.replace("Batasi Pemakaian AI: ", "").replace("Batasi Pemakaian: ", "")}`;
+        console.warn("❌ [CAMPUS AI - CHAT LIMIT REACHED] Batas pemakaian mingguan/cooldown AI terpenuhi.");
       } else if (detailMsg && detailMsg.toLowerCase().includes("leaked")) {
         botMessage = '🔒 **Keamanan API Key**: Terdeteksi kebocoran API Key di public repository. Kunci ini diblokir otomatis oleh Google demi keamanan Anda. Harap segera perbarui file `.env` di backend.';
         console.warn("❌ [CAMPUS AI - CHAT LEAKED KEY DETECTED] Google menonaktifkan API Key ini karena terdeteksi bocor di public repository.");

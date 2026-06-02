@@ -396,7 +396,7 @@ export default function CareerAnalysis() {
                 Lihat Roadmap
               </button>
               <button
-                onClick={() => navigate('/todos')}
+                onClick={() => navigate('/planner')}
                 className="w-full bg-slate-100 text-slate-600 py-3 rounded-xl font-bold hover:bg-slate-200 transition"
               >
                 Buka Todolist
