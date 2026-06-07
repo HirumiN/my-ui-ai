@@ -1,9 +1,39 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUser } from '../contexts/UserContext';
 import careerService from '../services/careerService';
-import RoadmapChat, { XPToast } from '../components/RoadmapChat';
-import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star, ArrowRight } from 'lucide-react';
+import { XPToast } from '../components/RoadmapChat';
+import { Map, CheckCircle, Clock, MapPin, Target, Trash2, X, PenLine, Plus, Check, ChevronDown, ChevronUp, Star, ArrowRight, Sparkles, RefreshCw } from 'lucide-react';
 import { sendNotification } from '../services/notificationService';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+const parseTags = (tags) => {
+  if (!tags) return [];
+  if (Array.isArray(tags)) return tags;
+  try {
+    let parsed = JSON.parse(tags);
+    if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+    if (Array.isArray(parsed)) {
+      return parsed.map(t => {
+        if (typeof t === 'string' && (t.startsWith('[') || t.startsWith('"'))) {
+          try {
+            const inner = JSON.parse(t);
+            return Array.isArray(inner) ? inner : [t];
+          } catch {
+            return t;
+          }
+        }
+        return t;
+      }).flat();
+    }
+    return [];
+  } catch {
+    if (typeof tags === 'string' && tags.trim()) {
+      return [tags.trim()];
+    }
+    return [];
+  }
+};
 
 export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
   const { impersonatedUser: user, checkAuth } = useUser();
@@ -15,8 +45,14 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
   const [stepsLoading, setStepsLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
   const [activePopupPhase, setActivePopupPhase] = useState(null);
-  const [showChat, setShowChat] = useState(true);
   const [xpToast, setXpToast] = useState(null);
+
+  // AI Coach Modal States
+  const [isCoachModalOpen, setIsCoachModalOpen] = useState(false);
+  const [coachMessage, setCoachMessage] = useState('');
+  const [coachLoading, setCoachLoading] = useState(false);
+  const [coachPreview, setCoachPreview] = useState(null);
+  const [coachApplying, setCoachApplying] = useState(false);
 
   // Inline edit state
   const [editingStepId, setEditingStepId] = useState(null);
@@ -137,6 +173,41 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
     finally { setLoading(false); }
   };
 
+  // ── AI Coach Handlers ─────────────────────────────────────────
+  const handleCoachSend = async () => {
+    if (!coachMessage.trim() || !activeRoadmapId) return;
+    setCoachLoading(true);
+    setCoachPreview(null);
+    try {
+      const data = await careerService.adaptRoadmapPreview(activeRoadmapId, coachMessage);
+      setCoachPreview(data);
+    } catch (e) {
+      console.error(e);
+      const detailMsg = e.response?.data?.detail || e.message;
+      alert(`Gagal menghubungi AI Coach: ${detailMsg}`);
+    } finally {
+      setCoachLoading(false);
+    }
+  };
+
+  const handleCoachApply = async () => {
+    if (!coachPreview) return;
+    setCoachApplying(true);
+    try {
+      await careerService.adaptRoadmapApply(activeRoadmapId, coachPreview.proposed_changes);
+      setCoachPreview(null);
+      setCoachMessage('');
+      setIsCoachModalOpen(false);
+      await fetchDetails();
+      if (onSkillUpdate) onSkillUpdate();
+    } catch (e) {
+      console.error(e);
+      alert('Gagal menerapkan perubahan.');
+    } finally {
+      setCoachApplying(false);
+    }
+  };
+
   if (!user) return (
     <div className="p-6">
       <div className="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 p-4 rounded-xl" role="alert">
@@ -163,7 +234,15 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           <h2 className="text-xl sm:text-2xl font-bold text-slate-800">Alur Pembelajaran</h2>
           <p className="text-slate-500 mt-1 text-xs sm:text-sm">Centang langkah untuk mendapat XP dan maju menuju target karir.</p>
         </div>
-        {/* AI Coach button removed for persistence */}
+        {activeRoadmapId && (
+          <button
+            onClick={() => setIsCoachModalOpen(true)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-emerald-600/10 active:scale-95"
+          >
+            <Star size={14} className="fill-white" />
+            AI Coach
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -185,46 +264,36 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-0">
-          {/* Main: Phase Node Graph (Expanded) */}
-          <div className="lg:col-span-9">
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-8 shadow-sm min-h-[350px] sm:min-h-[500px] flex justify-center">
-              {stepsLoading ? (
-                <div className="flex justify-center p-12"><Clock className="animate-spin text-emerald-400" size={32} /></div>
-              ) : (
-                <div className="flex flex-col items-center w-full relative pt-2">
-                  {Object.entries(stepsByPhase).map(([phase, phaseSteps], index) => {
-                    const isCompleted = phaseSteps.every(step => {
-                      const p = progressData.find(pr => pr.id_roadmap_step === step.id);
-                      return p?.status === 'completed';
-                    });
-                    return (
-                      <div key={phase} className="relative flex justify-center w-full mb-10">
-                        {index !== Object.entries(stepsByPhase).length - 1 && (
-                          <div className="absolute top-[3.5rem] h-12 w-1 bg-emerald-100 z-0" />
-                        )}
-                        <button
-                          onClick={() => setActivePopupPhase(phase)}
-                          className={`w-full max-w-[280px] sm:max-w-[320px] py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl font-bold shadow-sm text-center transition-all hover:scale-[1.02] border-2 sm:border-4 z-10 ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-emerald-300 text-slate-800 hover:border-emerald-500'}`}
-                        >
-                          <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest mb-0.5 sm:mb-1 opacity-60">Fase {index + 1}</div>
-                          <span className="text-xs sm:text-base">{phase}</span>
-                          {isCompleted && <span className="ml-1.5 inline-block text-emerald-500 font-bold">✓</span>}
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ── AI Chat Panel (Persistent) ── */}
-          <div className="lg:col-span-3 bg-white border border-emerald-100 rounded-2xl shadow-sm p-4 sm:p-5 flex flex-col h-[400px] sm:h-[500px] lg:h-[600px] relative lg:sticky lg:top-6">
-            <RoadmapChat
-              roadmapId={activeRoadmapId}
-              onApplied={() => { fetchDetails(); }}
-            />
+        <div className="w-full h-full min-h-0">
+          {/* Main: Phase Node Graph (Full Width) */}
+          <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 sm:p-8 shadow-sm min-h-[350px] sm:min-h-[500px] flex justify-center">
+            {stepsLoading ? (
+              <div className="flex justify-center p-12"><Clock className="animate-spin text-emerald-400" size={32} /></div>
+            ) : (
+              <div className="flex flex-col items-center w-full relative pt-2">
+                {Object.entries(stepsByPhase).map(([phase, phaseSteps], index) => {
+                  const isCompleted = phaseSteps.every(step => {
+                    const p = progressData.find(pr => pr.id_roadmap_step === step.id);
+                    return p?.status === 'completed';
+                  });
+                  return (
+                    <div key={phase} className="relative flex justify-center w-full mb-10">
+                      {index !== Object.entries(stepsByPhase).length - 1 && (
+                        <div className="absolute top-[3.5rem] h-12 w-1 bg-emerald-100 z-0" />
+                      )}
+                      <button
+                        onClick={() => setActivePopupPhase(phase)}
+                        className={`w-full max-w-[280px] sm:max-w-[320px] py-3.5 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl font-bold shadow-sm text-center transition-all hover:scale-[1.02] border-2 sm:border-4 z-10 ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-emerald-300 text-slate-800 hover:border-emerald-500'}`}
+                      >
+                        <div className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest mb-0.5 sm:mb-1 opacity-60">Fase {index + 1}</div>
+                        <span className="text-xs sm:text-base">{phase}</span>
+                        {isCompleted && <span className="ml-1.5 inline-block text-emerald-500 font-bold">✓</span>}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -253,8 +322,7 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
                 const progress = progressData.find(p => p.id_roadmap_step === step.id);
                 const isDone = progress?.status === 'completed';
                 const isEditing = editingStepId === step.id;
-                let skillList = [];
-                try { skillList = JSON.parse(step.skill_tags || '[]'); } catch { skillList = []; }
+                const skillList = parseTags(step.skill_tags);
 
                 return (
                   <div key={step.id} className={`bg-white border rounded-xl p-4 sm:p-5 shadow-sm transition-all ${isDone ? 'border-emerald-200 bg-emerald-50/30 opacity-80' : 'border-slate-200 hover:border-emerald-300 hover:shadow-md'}`}>
@@ -341,6 +409,179 @@ export default function Roadmap({ onSkillUpdate, onGenerate, onLoad }) {
           </>
         )}
       </div>
+
+      {/* ── AI Coach Modal ── */}
+      {isCoachModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl max-h-[85vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-100 animate-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                  <Sparkles size={20} className="animate-pulse" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-extrabold text-slate-800 tracking-tight">AI Roadmap Coach</h3>
+                  <p className="text-slate-400 text-xs font-medium">Tanya AI untuk menyesuaikan langkah belajar Anda</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsCoachModalOpen(false);
+                  setCoachPreview(null);
+                  setCoachMessage('');
+                }}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+              {coachPreview ? (
+                // Proposed Changes Preview State
+                <div className="space-y-4">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 text-sm text-emerald-800">
+                    <h4 className="font-extrabold text-sm mb-2 text-emerald-950 flex items-center gap-1.5">
+                      <Sparkles size={14} /> Analisis AI Coach:
+                    </h4>
+                    <div className="prose prose-sm max-w-none text-emerald-800 leading-relaxed markdown-content">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {coachPreview.ai_message}
+                      </ReactMarkdown>
+                    </div>
+                  </div>
+
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Perubahan yang Diusulkan:</p>
+                  
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                    {coachPreview.proposed_changes.filter(c => c.action !== 'keep').map((change, i) => {
+                      const style = 
+                        change.action === 'add' ? 'border-l-4 border-emerald-500 bg-emerald-50/50' :
+                        change.action === 'remove' ? 'border-l-4 border-rose-400 bg-rose-50/50 opacity-70' :
+                        'border-l-4 border-amber-400 bg-amber-50/50';
+                      const badgeCls = 
+                        change.action === 'add' ? 'bg-emerald-100 text-emerald-700' :
+                        change.action === 'remove' ? 'bg-rose-100 text-rose-700' :
+                        'bg-amber-100 text-amber-700';
+                      const badgeLabel = 
+                        change.action === 'add' ? '+ Tambah' :
+                        change.action === 'remove' ? '− Hapus' :
+                        '✏ Edit';
+
+                      return (
+                        <div key={i} className={`rounded-xl p-4 shadow-sm border border-slate-100 bg-white ${style}`}>
+                          <div className="flex justify-between items-center mb-2">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${badgeCls}`}>
+                              {badgeLabel}
+                            </span>
+                            <span className="text-xs font-bold text-slate-400">{change.phase}</span>
+                          </div>
+                          <p className={`font-bold text-sm ${change.action === 'remove' ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                            {change.title}
+                          </p>
+                          {change.description && (
+                            <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{change.description}</p>
+                          )}
+                           {parseTags(change.skill_tags).length > 0 && (
+                             <div className="flex flex-wrap gap-1 mt-2">
+                               {parseTags(change.skill_tags).map(tag => (
+                                 <span key={tag} className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-50 text-emerald-600 rounded">
+                                   {tag}
+                                 </span>
+                               ))}
+                             </div>
+                           )}
+                        </div>
+                      );
+                    })}
+                    {coachPreview.proposed_changes.filter(c => c.action !== 'keep').length === 0 && (
+                      <p className="text-sm text-slate-500 text-center py-4">Tidak ada perubahan langkah yang perlu dilakukan.</p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                // Input Prompt State
+                <div className="space-y-5">
+                  <div className="space-y-2">
+                    <label className="text-xs font-extrabold text-slate-500 uppercase tracking-widest">Apa yang ingin Anda sesuaikan?</label>
+                    <textarea
+                      value={coachMessage}
+                      onChange={e => setCoachMessage(e.target.value)}
+                      placeholder="Contoh: Fokuskan roadmap saya ke bidang Backend Engineering dan kurangi modul desain..."
+                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 bg-white shadow-inner"
+                      rows={4}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-slate-400">Pilih rekomendasi instruksi cepat:</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {[
+                        'Fokuskan ke kemampuan manajemen dan kepemimpinan dulu',
+                        'Saya lebih tertarik pada bidang kreatif dan desain',
+                        'Tambahkan langkah untuk mempersiapkan magang/industri'
+                      ].map(ex => (
+                        <button
+                          key={ex}
+                          onClick={() => setCoachMessage(ex)}
+                          className="text-left px-4 py-3 bg-white border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/50 rounded-xl transition text-xs font-semibold text-slate-700 hover:text-emerald-700 shadow-sm"
+                        >
+                          "{ex}"
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-100 bg-white flex justify-end gap-3">
+              {coachPreview ? (
+                <>
+                  <button
+                    onClick={() => setCoachPreview(null)}
+                    disabled={coachApplying}
+                    className="px-5 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition text-sm font-semibold"
+                  >
+                    ✕ Kembali / Edit
+                  </button>
+                  <button
+                    onClick={handleCoachApply}
+                    disabled={coachApplying}
+                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition text-sm font-extrabold flex items-center gap-2 shadow-lg shadow-emerald-600/10"
+                  >
+                    {coachApplying ? <RefreshCw size={14} className="animate-spin" /> : <Check size={14} />}
+                    Terapkan Perubahan
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setIsCoachModalOpen(false);
+                      setCoachMessage('');
+                    }}
+                    className="px-5 py-2.5 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-50 transition text-sm font-semibold"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleCoachSend}
+                    disabled={coachLoading || !coachMessage.trim()}
+                    className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition text-sm font-extrabold flex items-center gap-2 shadow-lg shadow-emerald-600/10 disabled:opacity-50"
+                  >
+                    {coachLoading ? <RefreshCw size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    Minta Saran AI
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
